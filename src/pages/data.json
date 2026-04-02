@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "header": "Cover Page",
+    "type": "Cover Page",
+    "status": "Done",
+    "target": "10",
+    "limit": "20",
+    "reviewer": "Eddie Lake"
+  },
+  {
+    "id": 2,
+    "header": "Table of Contents",
+    "type": "Table of Contents",
+    "status": "Done",
+    "target": "5",
+    "limit": "10",
+    "reviewer": "Jamik Tashpulatov"
+  },
+  {
+    "id": 3,
+    "header": "Executive Summary",
+    "type": "Executive Summary",
+    "status": "In Progress",
+    "target": "15",
+    "limit": "30",
+    "reviewer": "Assign reviewer"
+  },
+  {
+    "id": 4,
+    "header": "Technical Approach",
+    "type": "Technical Approach",
+    "status": "In Progress",
+    "target": "20",
+    "limit": "40",
+    "reviewer": "Eddie Lake"
+  },
+  {
+    "id": 5,
+    "header": "Capabilities",
+    "type": "Capabilities",
+    "status": "Not Started",
+    "target": "12",
+    "limit": "25",
+    "reviewer": "Assign reviewer"
+  },
+  {
+    "id": 6,
+    "header": "Narrative",
+    "type": "Narrative",
+    "status": "Not Started",
+    "target": "8",
+    "limit": "15",
+    "reviewer": "Assign reviewer"
+  }
+]

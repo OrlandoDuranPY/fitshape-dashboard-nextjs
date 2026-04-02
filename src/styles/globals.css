@@ -4,8 +4,45 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ── Fuentes personalizadas ─────────────────────────────── */
+/* Regular */
+@font-face {
+  font-family: "Chakra Petch";
+  src: url("/fonts/ChakraPetch-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Medium  */
+@font-face {
+  font-family: "Chakra Petch";
+  src: url("/fonts/ChakraPetch-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Semi bold */
+@font-face {
+  font-family: "Chakra Petch";
+  src: url("/fonts/ChakraPetch-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Bold */
+@font-face {
+  font-family: "Chakra Petch";
+  src: url("/fonts/ChakraPetch-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
-  --background: oklch(1 0 0);
+  --background: #eff1f3;
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
@@ -37,6 +74,11 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* ── Variables personalizadas ── */
+  --brand: #ff0a54;
+  --card-surface: #f8fafc;
+  --gray: #6c757d;
 }
 
 @theme inline {
@@ -44,7 +86,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: "Chakra Petch", sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -81,12 +123,18 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* ── Variables personalizadas ── */
+  --color-brand: var(--brand);
+  --color-card-surface: var(--card-surface);
+  --color-gray: var(--gray);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #10161d;
+    --foreground: #f8f9fa;
+    --card-surface: #1c2228;
   }
 }
 
@@ -97,8 +145,8 @@ body {
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
+  --background: #10161d;
+  --foreground: #f8f9fa;
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
@@ -128,6 +176,9 @@ body {
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* ── Variables personalizadas ── */
+  --card-surface: #1c2228;
 }
 
 @layer base {
