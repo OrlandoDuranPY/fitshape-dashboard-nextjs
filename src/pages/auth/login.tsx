@@ -12,7 +12,7 @@ import {ROUTES} from "@/routing/routes";
 export default function login() {
   return (
     <section className='flex items-center justify-center min-h-screen w-full p-4'>
-      <Card className='px-4 w-full max-w-md'>
+      <Card className='px-4 w-full max-w-md space-y-1'>
         <div className='flex flex-col'>
           <Title level={2} title='Bienvenido de nuevo' />
           <p className='text-foreground/80 font-heading'>
