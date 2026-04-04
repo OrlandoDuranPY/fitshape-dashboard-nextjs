@@ -1,4 +1,4 @@
-import {AUTH} from "./auth/auth";
+import {AUTH} from "./auth";
 
 export const ENDPOINTS = {
   /* ========================================

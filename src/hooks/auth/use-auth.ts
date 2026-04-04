@@ -1,4 +1,4 @@
-import {apiRequest} from "@/lib/api/axios";
+import {apiRequest} from "@/lib/api/client/axios";
 import {ENDPOINTS} from "@/lib/api/endpoints";
 import {useAuthStore} from "@/lib/store/authStore";
 import {useState} from "react";
@@ -27,10 +27,10 @@ interface RegisterData {
   name: string;
   first_last_name: string;
   second_last_name?: string;
-  gender_id?: string;
+  gender_id?: number;
   metric_system: "metric" | "imperial";
-  weight: string;
-  height: string;
+  weight: number;
+  height: number;
   birth_date: Date;
 }
 
@@ -45,7 +45,13 @@ export const useAuth = () => {
   /* ========================================
        = Requests =
     ========================================= */
-  const register = async (data: RegisterData): Promise<Record<string, string[]> | null> => {
+
+  /**
+   * Register a new user.
+   */
+  const register = async (
+    data: RegisterData,
+  ): Promise<Record<string, string[]> | null> => {
     setIsLoading(true);
     setErrors({});
     try {

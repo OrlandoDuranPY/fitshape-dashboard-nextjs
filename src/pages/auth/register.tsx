@@ -11,13 +11,14 @@ import {Card} from "@/components/ui/card";
 import Title from "@/components/ui/title";
 import {ROUTES} from "@/routing/routes";
 import RegisterStepper from "@/components/auth/RegisterStepper";
-import {useAuth} from "@/hooks/auth/useAuth";
+import {useAuth} from "@/hooks/auth/use-auth";
 
 export default function Register() {
   const {register: authRegister} = useAuth();
 
   const methods = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
+    mode: "onBlur",
   });
 
   const onFinish = methods.handleSubmit(async (data) => {
