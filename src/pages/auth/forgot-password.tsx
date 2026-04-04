@@ -1,4 +1,4 @@
-import AuthLayout from "./layouts/AuthLayout";
+import AuthLayout from "@/components/layouts/AuthLayout";
 import type {ReactElement} from "react";
 import InputGroup from "@/components/forms/input-group";
 import {Card} from "@/components/ui/card";

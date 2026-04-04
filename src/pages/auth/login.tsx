@@ -1,12 +1,12 @@
-import AuthLayout from "./layouts/AuthLayout";
 import type {ReactElement} from "react";
+import Link from "next/link";
+import AuthLayout from "@/components/layouts/AuthLayout";
 import InputGroup from "@/components/forms/input-group";
 import {Card} from "@/components/ui/card";
 import Title from "@/components/ui/title";
 import {Button} from "@/components/ui/button";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Label} from "@/components/ui/label";
-import Link from "next/link";
 import {ROUTES} from "@/routing/routes";
 
 export default function login() {
