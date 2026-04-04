@@ -7,7 +7,7 @@ Cliente HTTP basado en **axios** con interceptores para autenticación automáti
 ## Instalación de dependencias
 
 ```bash
-npm install axios
+npm install axios sonner
 ```
 
 ---
@@ -15,18 +15,55 @@ npm install axios
 ## Importación
 
 ```ts
-import {apiRequest} from "~/lib/api/axios";
-import {ENDPOINTS} from "~/lib/api/endpoints";
+import {apiRequest} from "@/lib/api/client/axios";
+import {ENDPOINTS} from "@/lib/api/endpoints";
+```
+
+---
+
+## Interfaces base
+
+```ts
+// @/lib/api/interfaces/api-response.interface.ts
+export interface ApiResponse {
+  status: "success" | "error";
+  status_code: number;
+  message: string;
+  data?: object; // presente solo en endpoints que devuelven recursos
+}
+
+// @/lib/api/interfaces/api-validation-error.interface.ts
+export interface ApiValidationError {
+  message: string;
+  errors: Record<string, string[]>; // errores de validación por campo
+}
+```
+
+> **¿Por qué `ApiValidationError` y no `Error`?**
+> El interceptor de axios rechaza directamente `error.response?.data`, que es el objeto
+> JSON del servidor — no una instancia de `Error`. Por eso en el `catch` se hace cast
+> a `ApiValidationError` para acceder a `message` y `errors`.
+
+### Acceder al `data` tipado
+
+Como `data` es `object | undefined`, hay que hacer cast al tipo esperado:
+
+```ts
+const response = await apiRequest<ApiResponse>(ENDPOINTS.AUTH.LOGIN, {
+  method: "POST",
+  data: credentials,
+});
+
+const payload = response.data as {token: string; user: User};
+setSession(payload.token, payload.user);
 ```
 
 ---
 
 ## Estructura de ENDPOINTS
 
-Centraliza todas las rutas en un objeto para evitar strings sueltos:
-
 ```ts
-// lib/api/endpoints.ts
+// @/lib/api/endpoints.ts
 export const ENDPOINTS = {
   AUTH: {
     REGISTER: "/auth/register",
@@ -46,34 +83,18 @@ export const ENDPOINTS = {
 
 ---
 
-## Tipado de respuestas
+## Patrón de hook — estructura base
 
-Define interfaces para las respuestas del servidor y pásalas como genérico a `apiRequest<T>`:
+Todo hook de servicio sigue esta estructura:
 
 ```ts
-// Respuesta envuelta típica de una API Laravel / REST
-interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data: T;
-}
-
-// Recurso específico
-interface User {
-  id: number;
-  name: string;
-  email: string;
-}
-
-// Uso con tipo completo
-const response = await apiRequest<ApiResponse<User>>(ENDPOINTS.AUTH.ME, {
-  method: "GET",
-});
-
-if (response.success) {
-  console.log(response.data.name); // ✅ tipado completo
-}
+const [isLoading, setIsLoading] = useState(false);
+const [errors, setErrors] = useState<Record<string, string[]>>({});
 ```
+
+- **`isLoading`** — activo durante la petición, útil para deshabilitar botones.
+- **`errors`** — errores de validación por campo (`{ email: ["El email ya existe"] }`).
+  Se limpia con `setErrors({})` al inicio de cada petición.
 
 ---
 
@@ -82,25 +103,32 @@ if (response.success) {
 ### Index — Listado (con y sin parámetros)
 
 ```ts
-// Sin parámetros
-const response = await apiRequest<ApiResponse<Product[]>>(
-  ENDPOINTS.PRODUCTS.INDEX,
-  {method: "GET"},
-);
-
-// Con parámetros opcionales de filtrado / paginación
-const response = await apiRequest<ApiResponse<PaginatedResponse<Product>>>(
-  ENDPOINTS.PRODUCTS.INDEX,
-  {
-    method: "GET",
-    params: {
-      page: 1,
-      per_page: 20,
-      search: "camiseta", // si es undefined, se omite automáticamente
-      category_id: undefined, // ← se ignora, no aparece en la URL
-    },
-  },
-);
+const getProducts = async (params?: {
+  search?: string;
+  page?: number;
+  per_page?: number;
+}): Promise<ApiResponse | null> => {
+  setIsLoading(true);
+  setErrors({});
+  try {
+    const response = await apiRequest<ApiResponse>(
+      ENDPOINTS.PRODUCTS.INDEX,
+      {method: "GET", params}, // los params undefined se filtran automáticamente
+    );
+    if (response.status === "success") {
+      const products = response.data as Product[];
+      return response;
+    }
+    return response;
+  } catch (err) {
+    const apiError = err as ApiValidationError;
+    toast.error(apiError.message || "Error al obtener productos");
+    setErrors(apiError.errors ?? {});
+    return null;
+  } finally {
+    setIsLoading(false);
+  }
+};
 ```
 
 ---
@@ -108,52 +136,87 @@ const response = await apiRequest<ApiResponse<PaginatedResponse<Product>>>(
 ### Show — Obtener un recurso por ID
 
 ```ts
-const response = await apiRequest<ApiResponse<Product>>(
-  ENDPOINTS.PRODUCTS.SHOW(id),
-  {method: "GET"},
-);
+const getProduct = async (id: number): Promise<ApiResponse | null> => {
+  setIsLoading(true);
+  setErrors({});
+  try {
+    const response = await apiRequest<ApiResponse>(
+      ENDPOINTS.PRODUCTS.SHOW(id),
+      {method: "GET"},
+    );
+    if (response.status === "success") {
+      const product = response.data as Product;
+    }
+    return response;
+  } catch (err) {
+    const apiError = err as ApiValidationError;
+    toast.error(apiError.message || "Error al obtener el producto");
+    return null;
+  } finally {
+    setIsLoading(false);
+  }
+};
 ```
 
 ---
 
-### Store — Crear un nuevo recurso
+### Store — Crear un recurso
 
 ```ts
-const response = await apiRequest<ApiResponse<Product>>(
-  ENDPOINTS.PRODUCTS.STORE,
-  {
-    method: "POST",
-    data: {
-      name: "Camiseta básica",
-      price: 299,
-      category_id: 3,
-    },
-  },
-);
+const createProduct = async (
+  data: ProductData,
+): Promise<ApiResponse | null> => {
+  setIsLoading(true);
+  setErrors({});
+  try {
+    const response = await apiRequest<ApiResponse>(ENDPOINTS.PRODUCTS.STORE, {
+      method: "POST",
+      data,
+    });
+    if (response.status === "success") {
+      toast.success(response.message || "Producto creado");
+    }
+    return response;
+  } catch (err) {
+    const apiError = err as ApiValidationError;
+    toast.error(apiError.message || "Error al crear el producto");
+    setErrors(apiError.errors ?? {});
+    return null;
+  } finally {
+    setIsLoading(false);
+  }
+};
 ```
 
 ---
 
-### Update — Actualizar un recurso existente
+### Update — Actualizar un recurso
 
 ```ts
-// PUT — reemplaza el recurso completo
-const response = await apiRequest<ApiResponse<Product>>(
-  ENDPOINTS.PRODUCTS.UPDATE(id),
-  {
-    method: "PUT",
-    data: {name: "Camiseta premium", price: 399, category_id: 3},
-  },
-);
-
-// PATCH — actualización parcial
-const response = await apiRequest<ApiResponse<Product>>(
-  ENDPOINTS.PRODUCTS.UPDATE(id),
-  {
-    method: "PATCH",
-    data: {price: 349},
-  },
-);
+const updateProduct = async (
+  id: number,
+  data: Partial<ProductData>,
+): Promise<ApiResponse | null> => {
+  setIsLoading(true);
+  setErrors({});
+  try {
+    const response = await apiRequest<ApiResponse>(
+      ENDPOINTS.PRODUCTS.UPDATE(id),
+      {method: "PATCH", data},
+    );
+    if (response.status === "success") {
+      toast.success(response.message || "Producto actualizado");
+    }
+    return response;
+  } catch (err) {
+    const apiError = err as ApiValidationError;
+    toast.error(apiError.message || "Error al actualizar el producto");
+    setErrors(apiError.errors ?? {});
+    return null;
+  } finally {
+    setIsLoading(false);
+  }
+};
 ```
 
 ---
@@ -161,165 +224,112 @@ const response = await apiRequest<ApiResponse<Product>>(
 ### Destroy — Eliminar un recurso
 
 ```ts
-await apiRequest<ApiResponse<null>>(ENDPOINTS.PRODUCTS.DELETE(id), {
-  method: "DELETE",
-});
-```
-
----
-
-## Patrón de hook de servicio
-
-Encapsula la lógica de peticiones en custom hooks. Expón `isLoading`, `error` y los métodos que necesites.
-
-```ts
-// hooks/useProducts.ts
-import {apiRequest} from "@/lib/api/axios";
-import {ENDPOINTS} from "@/lib/api/endpoints";
-import {useState} from "react";
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-}
-interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data: T;
-}
-
-export const useProducts = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const getProducts = async (params?: {search?: string; page?: number}) => {
-    setIsLoading(true);
-    setError(null); // ← limpia error previo antes de cada petición
-    try {
-      const response = await apiRequest<ApiResponse<Product[]>>(
-        ENDPOINTS.PRODUCTS.INDEX,
-        {method: "GET", params},
-      );
-      if (response.success) {
-        return response.data;
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-    } finally {
-      setIsLoading(false);
+const deleteProduct = async (id: number): Promise<ApiResponse | null> => {
+  setIsLoading(true);
+  setErrors({});
+  try {
+    const response = await apiRequest<ApiResponse>(
+      ENDPOINTS.PRODUCTS.DELETE(id),
+      {method: "DELETE"},
+    );
+    if (response.status === "success") {
+      toast.success(response.message || "Producto eliminado");
     }
-  };
-
-  const deleteProduct = async (id: number) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      await apiRequest<ApiResponse<null>>(ENDPOINTS.PRODUCTS.DELETE(id), {
-        method: "DELETE",
-      });
-      return true;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error desconocido");
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return {isLoading, error, getProducts, deleteProduct};
+    return response;
+  } catch (err) {
+    const apiError = err as ApiValidationError;
+    toast.error(apiError.message || "Error al eliminar el producto");
+    return null;
+  } finally {
+    setIsLoading(false);
+  }
 };
 ```
 
 ---
 
-## Patrón de hook con autenticación (setSession / clearSession)
-
-Cuando el servidor devuelve un token, guárdalo en el store con `setSession`. Al cerrar sesión usa `clearSession`.
+## Patrón de hook con autenticación
 
 ```ts
 // hooks/useAuth.ts
-import {apiRequest} from "@/lib/api/axios";
+import {apiRequest} from "@/lib/api/client/axios";
 import {ENDPOINTS} from "@/lib/api/endpoints";
+import type {ApiResponse} from "@/lib/api/interfaces/api-response.interface";
+import type {ApiValidationError} from "@/lib/api/interfaces/api-validation-error.interface";
 import {useAuthStore} from "@/lib/store/authStore";
 import {useState} from "react";
+import {toast} from "sonner";
 
-interface LoginData {
-  email: string;
-  password: string;
-}
-interface RegisterData {
-  email: string;
-  password: string;
-  name: string; /* ... */
-}
 interface AuthPayload {
   token: string;
   user: User;
 }
-interface ApiResponse<T> {
-  success: boolean;
-  message?: string;
-  data: T;
-}
 
 export const useAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<Record<string, string[]>>({});
   const {setSession, clearSession} = useAuthStore();
 
-  const login = async (data: LoginData) => {
+  // Register — el servidor solo confirma, no devuelve data
+  const register = async (data: RegisterData): Promise<ApiResponse | null> => {
     setIsLoading(true);
-    setError(null);
-    try {
-      const response = await apiRequest<ApiResponse<AuthPayload>>(
-        ENDPOINTS.AUTH.LOGIN,
-        {method: "POST", data},
-      );
-      if (response.success) {
-        setSession(response.data.token, response.data.user); // ← persiste sesión
-        return response.data;
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al iniciar sesión");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const register = async (data: RegisterData) => {
-    setIsLoading(true);
-    setError(null);
+    setErrors({});
     try {
       const response = await apiRequest<ApiResponse>(ENDPOINTS.AUTH.REGISTER, {
         method: "POST",
         data,
       });
-      if (response.success) {
-        setSession(response.data.token, response.data.user);
-        return response.data;
+      if (response.status === "success") {
+        toast.success(response.message || "Registro exitoso");
       }
+      return response;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al registrar");
+      const apiError = err as ApiValidationError;
+      toast.error(apiError.message || "Error en el registro");
+      setErrors(apiError.errors ?? {});
+      return null;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const logout = async () => {
+  // Login — el servidor devuelve token + user en data
+  const login = async (data: LoginData): Promise<ApiResponse | null> => {
     setIsLoading(true);
-    setError(null);
+    setErrors({});
     try {
-      await apiRequest<ApiResponse<null>>(ENDPOINTS.AUTH.LOGOUT, {
+      const response = await apiRequest<ApiResponse>(ENDPOINTS.AUTH.LOGIN, {
         method: "POST",
+        data,
       });
+      if (response.status === "success") {
+        const payload = response.data as AuthPayload;
+        setSession(payload.token, payload.user);
+        toast.success(response.message || "Bienvenido");
+      }
+      return response;
+    } catch (err) {
+      const apiError = err as ApiValidationError;
+      toast.error(apiError.message || "Credenciales incorrectas");
+      setErrors(apiError.errors ?? {});
+      return null;
     } finally {
-      clearSession(); // ← limpia siempre, aunque el server falle
       setIsLoading(false);
     }
   };
 
-  return {isLoading, error, login, register, logout};
+  // Logout — limpia sesión aunque el server falle
+  const logout = async (): Promise<void> => {
+    setIsLoading(true);
+    try {
+      await apiRequest<ApiResponse>(ENDPOINTS.AUTH.LOGOUT, {method: "POST"});
+    } finally {
+      clearSession();
+      setIsLoading(false);
+    }
+  };
+
+  return {isLoading, errors, register, login, logout};
 };
 ```
 
@@ -328,28 +338,50 @@ export const useAuth = () => {
 ## Consumir un hook desde un componente
 
 ```tsx
-// components/LoginForm.tsx
 import {useAuth} from "@/hooks/useAuth";
 
-export default function LoginForm() {
-  const {login, isLoading, error} = useAuth();
+export default function RegisterForm() {
+  const {register, isLoading, errors} = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = new FormData(e.currentTarget);
-    await login({
+
+    const result = await register({
       email: form.get("email") as string,
       password: form.get("password") as string,
+      password_confirmation: form.get("password_confirmation") as string,
+      name: form.get("name") as string,
+      first_last_name: form.get("first_last_name") as string,
+      metric_system: "metric",
+      weight: form.get("weight") as string,
+      height: form.get("height") as string,
+      birth_date: form.get("birth_date") as string,
     });
+
+    if (result?.status === "success") {
+      // redirigir, limpiar form, etc.
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <input name='email' type='email' required />
+      {errors.email?.map((msg) => (
+        <p key={msg} className='text-red-500 text-sm'>
+          {msg}
+        </p>
+      ))}
+
       <input name='password' type='password' required />
-      {error && <p className='text-red-500'>{error}</p>}
+      {errors.password?.map((msg) => (
+        <p key={msg} className='text-red-500 text-sm'>
+          {msg}
+        </p>
+      ))}
+
       <button type='submit' disabled={isLoading}>
-        {isLoading ? "Cargando..." : "Entrar"}
+        {isLoading ? "Registrando..." : "Registrarse"}
       </button>
     </form>
   );
@@ -358,59 +390,14 @@ export default function LoginForm() {
 
 ---
 
-## Manejo de errores
-
-Los errores de red y respuestas no-2xx lanzan un `Error` con el mensaje del servidor (`error.response.data.message`).
-
-```ts
-try {
-  const response = await apiRequest<ApiResponse<Product>>(
-    ENDPOINTS.PRODUCTS.SHOW(id),
-    {method: "GET"},
-  );
-} catch (error) {
-  // ✅ siempre verifica la instancia antes de leer .message
-  if (error instanceof Error) {
-    console.error(error.message);
-  }
-}
-```
-
----
-
-## Uso directo del cliente axios
-
-Para casos avanzados (uploads, cancelaciones) importa la instancia directamente:
-
-```ts
-import apiClient from "~/lib/api/axios";
-
-// Subir imagen con progreso
-const formData = new FormData();
-formData.append("image", file);
-
-await apiClient.post(`/products/${id}/image`, formData, {
-  headers: {"Content-Type": "multipart/form-data"},
-  onUploadProgress: (e) => {
-    const percent = Math.round((e.loaded * 100) / (e.total ?? 1));
-    console.log(`${percent}%`);
-  },
-});
-
-// Cancelar una petición
-const controller = new AbortController();
-const {data} = await apiClient.get("/products", {signal: controller.signal});
-controller.abort();
-```
-
----
-
 ## Referencia rápida
 
-| Operación | Método HTTP | Ejemplo de endpoint             |
-| --------- | ----------- | ------------------------------- |
-| Index     | GET         | `ENDPOINTS.PRODUCTS.INDEX`      |
-| Show      | GET         | `ENDPOINTS.PRODUCTS.SHOW(id)`   |
-| Store     | POST        | `ENDPOINTS.PRODUCTS.STORE`      |
-| Update    | PUT / PATCH | `ENDPOINTS.PRODUCTS.UPDATE(id)` |
-| Destroy   | DELETE      | `ENDPOINTS.PRODUCTS.DELETE(id)` |
+| Operación | Método HTTP | `data` en respuesta    |
+| --------- | ----------- | ---------------------- |
+| Index     | GET         | `T[]` (cast requerido) |
+| Show      | GET         | `T` (cast requerido)   |
+| Store     | POST        | generalmente ausente   |
+| Update    | PUT / PATCH | generalmente ausente   |
+| Destroy   | DELETE      | generalmente ausente   |
+| Login     | POST        | `AuthPayload` (cast)   |
+| Register  | POST        | ausente                |
