@@ -1,6 +1,7 @@
 import InputComponent from "./inputs/input-component";
 import SelectComponent from "./inputs/select-component";
 import DateComponent from "./inputs/date-component";
+import VerificationCodeComponent from "./inputs/verification-code-component";
 
 /* ========================================
    = Props =
@@ -9,10 +10,10 @@ interface InputGroupProps {
   name: string;
   label: string;
   required?: boolean;
-  placeholder: string;
+  placeholder?: string;
   type?: string;
-  errorMessage?: string;
   options?: {value: string; label: string}[];
+  clearable?: boolean;
 }
 
 export default function InputGroup({
@@ -21,8 +22,8 @@ export default function InputGroup({
   required = false,
   placeholder,
   type = "text",
-  errorMessage,
   options = [],
+  clearable,
 }: InputGroupProps) {
   if (type === "select") {
     return (
@@ -31,8 +32,8 @@ export default function InputGroup({
         label={label}
         required={required}
         placeholder={placeholder}
-        errorMessage={errorMessage}
         options={options}
+        clearable={clearable}
       />
     );
   }
@@ -44,7 +45,16 @@ export default function InputGroup({
         label={label}
         required={required}
         placeholder={placeholder}
-        errorMessage={errorMessage}
+      />
+    );
+  }
+
+  if (type === "verification_code") {
+    return (
+      <VerificationCodeComponent
+        name={name}
+        label={label}
+        required={required}
       />
     );
   }
@@ -56,7 +66,6 @@ export default function InputGroup({
       required={required}
       placeholder={placeholder}
       type={type}
-      errorMessage={errorMessage}
     />
   );
 }

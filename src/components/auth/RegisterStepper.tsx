@@ -1,15 +1,37 @@
+import {useEffect} from "react";
 import {useFormContext} from "react-hook-form";
 import {defineStepper} from "@stepperize/react";
 import Link from "next/link";
 import InputGroup from "@/components/forms/input-group";
-import {StepIndicator, StepLabel, StepperActions} from "@/components/ui/stepper";
+import {
+  StepIndicator,
+  StepLabel,
+  StepperActions,
+} from "@/components/ui/stepper";
 import {ROUTES} from "@/routing/routes";
+import {useCatalogs} from "@/hooks/use-catalogs";
 
 const {Scoped, Stepper, useStepper, steps} = defineStepper(
-  {id: "credentials", label: "Credenciales", fields: ["email", "password", "password_confirmation"]},
-  {id: "profile", label: "Datos de perfil", fields: ["name", "first_last_name"]},
-  {id: "preferences", label: "Preferencias", fields: ["gender_id", "metric_system"]},
-  {id: "measurements", label: "Medidas iniciales", fields: ["weight", "height", "birth_date"]},
+  {
+    id: "credentials",
+    label: "Credenciales",
+    fields: ["email", "password", "password_confirmation"],
+  },
+  {
+    id: "profile",
+    label: "Datos de perfil",
+    fields: ["name", "first_last_name"],
+  },
+  {
+    id: "preferences",
+    label: "Preferencias",
+    fields: ["gender_id", "metric_system"],
+  },
+  {
+    id: "measurements",
+    label: "Medidas iniciales",
+    fields: ["weight", "height", "birth_date"],
+  },
 );
 
 const genderOptions = [
@@ -24,9 +46,24 @@ const metricSystemOptions = [
 ];
 
 function RegisterStepperContent({onFinish}: {onFinish?: () => void}) {
+  /* ========================================
+   = Hooks =
+========================================= */
+  const {
+    // states
+    isLoading: isGendersLoading,
+    genders,
+    // methods
+    getGenders,
+  } = useCatalogs();
+
   const stepper = useStepper();
   const currentIndex = stepper.state.current.index;
   const {trigger} = useFormContext();
+
+  useEffect(() => {
+    getGenders();
+  }, []);
 
   const handleNext = async () => {
     const fields = stepper.state.current.data.fields as unknown as string[];
@@ -63,11 +100,17 @@ function RegisterStepperContent({onFinish}: {onFinish?: () => void}) {
           />
           <p className='text-sm font-heading text-foreground/80 text-center'>
             Al continuar, aceptas los{" "}
-            <Link href={ROUTES.auth.termsAndConditions} className='text-brand hover:underline'>
+            <Link
+              href={ROUTES.auth.termsAndConditions}
+              className='text-brand hover:underline'
+            >
               Términos y condiciones
             </Link>{" "}
             y{" "}
-            <Link href={ROUTES.auth.privacyPolicy} className='text-brand hover:underline'>
+            <Link
+              href={ROUTES.auth.privacyPolicy}
+              className='text-brand hover:underline'
+            >
               Política de privacidad
             </Link>
           </p>
@@ -102,7 +145,7 @@ function RegisterStepperContent({onFinish}: {onFinish?: () => void}) {
             name='gender_id'
             label='Género'
             placeholder='Selecciona tu género'
-            options={genderOptions}
+            options={genders}
             type='select'
             required
           />

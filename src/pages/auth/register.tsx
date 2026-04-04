@@ -1,6 +1,7 @@
 import type {ReactElement} from "react";
 import Link from "next/link";
 import {useForm, FormProvider} from "react-hook-form";
+import {format} from "date-fns";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {
   registerSchema,
@@ -12,9 +13,11 @@ import Title from "@/components/ui/title";
 import {ROUTES} from "@/routing/routes";
 import RegisterStepper from "@/components/auth/RegisterStepper";
 import {useAuth} from "@/hooks/auth/use-auth";
+import {useRouter} from "next/router";
 
 export default function Register() {
-  const {register: authRegister} = useAuth();
+  const router = useRouter();
+  const {register: authRegister, errors: apiErrors} = useAuth();
 
   const methods = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
@@ -22,8 +25,18 @@ export default function Register() {
   });
 
   const onFinish = methods.handleSubmit(async (data) => {
-    const apiErrors = await authRegister(data);
-    if (apiErrors) {
+    const payload = {
+      ...data,
+      birth_date: format(data.birth_date as unknown as Date, "yyyy-MM-dd"),
+    };
+    const response = await authRegister(payload);
+
+    if (response?.status === "success") {
+      // Reset form and navigate to email verification page
+      methods.reset();
+      router.push(ROUTES.auth.emailVerification);
+    } else {
+      // Map API validation errors to form fields
       Object.entries(apiErrors).forEach(([field, messages]) => {
         methods.setError(field as keyof RegisterSchema, {
           message: messages[0],

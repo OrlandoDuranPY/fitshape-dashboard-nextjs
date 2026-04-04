@@ -18,9 +18,9 @@ interface SelectComponentProps {
   name: string;
   label: string;
   required?: boolean;
-  placeholder: string;
+  placeholder?: string;
   clearable?: boolean;
-  options?: {value: string; label: string}[];
+  options?: {value: string | number; label: string}[];
 }
 
 export default function SelectComponent({
@@ -57,7 +57,7 @@ export default function SelectComponent({
               <SelectContent position='popper'>
                 <SelectGroup>
                   {options.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem key={option.value} value={String(option.value)}>
                       {option.label}
                     </SelectItem>
                   ))}

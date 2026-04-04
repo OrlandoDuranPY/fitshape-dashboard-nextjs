@@ -8,6 +8,7 @@ export const ROUTES = {
   auth: {
     login: "/auth/login",
     register: "/auth/register",
+    emailVerification: "/auth/email-verification",
     forgotPassword: "/auth/forgot-password",
     termsAndConditions: "/auth/terms-and-conditions",
     privacyPolicy: "/auth/privacy-policy",

@@ -11,7 +11,7 @@ interface InputComponentProps {
   name: string;
   label: string;
   required?: boolean;
-  placeholder: string;
+  placeholder?: string;
   type?: string;
 }
 
@@ -63,7 +63,13 @@ export default function InputComponent({
         id={name}
         placeholder={placeholder}
         type={isNumeric ? "text" : type}
-        inputMode={type === "decimal" ? "decimal" : type === "number" ? "numeric" : undefined}
+        inputMode={
+          type === "decimal"
+            ? "decimal"
+            : type === "number"
+              ? "numeric"
+              : undefined
+        }
         ref={ref}
         {...(isNumeric
           ? {value: numericValue, onChange: handleNumericChange}

@@ -14,7 +14,7 @@ interface DateComponentProps {
   name: string;
   label: string;
   required?: boolean;
-  placeholder: string;
+  placeholder?: string;
 }
 
 export default function DateComponent({
@@ -59,7 +59,10 @@ export default function DateComponent({
                 <CalendarIcon className='size-4 text-muted-foreground' />
               </button>
             </PopoverTrigger>
-            <PopoverContent className='w-auto overflow-hidden p-0' align='start'>
+            <PopoverContent
+              className='w-auto overflow-hidden p-0'
+              align='start'
+            >
               <Calendar
                 mode='single'
                 selected={field.value as Date | undefined}

@@ -1,5 +1,7 @@
 import {apiRequest} from "@/lib/api/client/axios";
 import {ENDPOINTS} from "@/lib/api/endpoints";
+import type {ApiResponse} from "@/lib/api/interfaces/api-response.interface";
+import type {ApiValidationError} from "@/lib/api/interfaces/api.validation-error.interface";
 import {useAuthStore} from "@/lib/store/authStore";
 import {useState} from "react";
 import {toast} from "sonner";
@@ -7,17 +9,6 @@ import {toast} from "sonner";
 /* ========================================
    = Interfaces =
 ========================================= */
-interface ApiResponse {
-  status: "success" | "error";
-  status_code: number;
-  message: string;
-  data?: object;
-}
-
-interface ApiValidationError {
-  message: string;
-  errors: Record<string, string[]>;
-}
 
 // TODO: Move this to a separate file if it grows
 interface RegisterData {
@@ -27,11 +18,11 @@ interface RegisterData {
   name: string;
   first_last_name: string;
   second_last_name?: string;
-  gender_id?: number;
+  gender_id?: string;
   metric_system: "metric" | "imperial";
-  weight: number;
-  height: number;
-  birth_date: Date;
+  weight: string;
+  height: string;
+  birth_date: string;
 }
 
 export const useAuth = () => {
@@ -49,9 +40,7 @@ export const useAuth = () => {
   /**
    * Register a new user.
    */
-  const register = async (
-    data: RegisterData,
-  ): Promise<Record<string, string[]> | null> => {
+  const register = async (data: RegisterData): Promise<ApiResponse | null> => {
     setIsLoading(true);
     setErrors({});
     try {
@@ -61,14 +50,15 @@ export const useAuth = () => {
       });
 
       if (response && response.status === "success") {
-        console.log("SUCCESS", response);
+        toast.success(response.message || "Registro exitoso");
       }
-      return null;
+
+      return response;
     } catch (err) {
       const apiError = err as ApiValidationError;
       toast.error(apiError.message || "Error en el registro");
       setErrors(apiError.errors ?? {});
-      return apiError.errors ?? {};
+      return null;
     } finally {
       setIsLoading(false);
     }
