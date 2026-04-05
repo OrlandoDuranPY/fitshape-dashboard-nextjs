@@ -3,6 +3,8 @@ import DesktopSidebar from "./dashboard/desktop-sidebar";
 import TopBar from "./dashboard/top-bar";
 import {ROUTES} from "@/routing/routes";
 import {NavItem} from "@/interfaces/nav-item-interface";
+import MobileSidebar from "./dashboard/mobile-sidebar";
+import {useState} from "react";
 
 const navItems: NavItem[] = [
   {
@@ -33,15 +35,22 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <section className='w-full h-dvh bg-background flex flex-col lg:flex-row'>
       {/* Menu */}
       <DesktopSidebar navItems={navItems} />
+      <MobileSidebar
+        navItems={navItems}
+        isOpen={mobileOpen}
+        onClose={() => setMobileOpen(false)}
+      />
 
       {/* Main content */}
       <main className='flex-1 flex flex-col overflow-hidden'>
         {/* Header */}
-        <TopBar />
+        <TopBar onMenuClick={() => setMobileOpen(true)} navItems={navItems} />
 
         {/* Contenido principal */}
         <div className='flex-1 overflow-y-auto p-4'>{children}</div>

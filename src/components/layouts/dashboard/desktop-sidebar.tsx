@@ -2,6 +2,7 @@
 
 import {NavItem} from "@/interfaces/nav-item-interface";
 import {ChevronDown} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {useState} from "react";
@@ -17,15 +18,24 @@ export default function DesktopSidebar({navItems}: Props) {
   const pathname = usePathname();
 
   return (
-    <aside className='h-full w-68 hidden lg:flex flex-col bg-card-surface'>
+    <aside className='h-full w-68 hidden lg:flex flex-col bg-card-surface border-r border-border/20'>
       {/* Logo */}
-      <div className='p-4 h-18 w-full flex items-center'>
-        <p className='flex gap-1 items-center text-brand font-heading font-black text-2xl'>
-          <span>Fitshape</span>
-        </p>
+      <div className='p-4 h-18 w-full flex items-center gap-3'>
+        <div className='relative h-full aspect-square shrink-0'>
+          <Image
+            src='/assets/img/logo.png'
+            alt='Fitshape Logo'
+            fill
+            className='object-contain'
+            loading='eager'
+          />
+        </div>
+        <span className='font-heading text-foreground text-2xl font-bold'>
+          FitShape
+        </span>
       </div>
       {/* Navegacion */}
-      <nav className='p-4 w-full flex-1 gap-2 flex flex-col'>
+      <nav className='p-4 w-full flex-1 gap-2 flex flex-col overflow-y-auto'>
         {navItems.map((item, index) =>
           item.type === "link" ? (
             <Link
@@ -87,7 +97,7 @@ const DropdownItem = ({item}: {item: Extract<NavItem, {type: "dropdown"}>}) => {
               className={`px-3 py-1.5 rounded-md font-heading text-sm font-medium transition-colors ${
                 pathname === child.path
                   ? "text-brand"
-                  : "text-muted-foreground hover:text-brand"
+                  : "text-muted-foreground hover:bg-brand/10 hover:text-brand"
               }`}
             >
               {child.label}
