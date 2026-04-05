@@ -1,5 +1,5 @@
 import axios, {type AxiosRequestConfig, type AxiosResponse} from "axios";
-import {useAuthStore} from "../../store/authStore";
+import {useAuthStore} from "../../store/auth-store";
 
 const BASE_URL =
   process.env.NEXT_PUBLIC_APP_ENV === "production"

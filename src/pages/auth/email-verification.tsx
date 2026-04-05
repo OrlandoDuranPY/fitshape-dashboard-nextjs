@@ -1,6 +1,6 @@
 import type {ReactElement} from "react";
 import {useForm, FormProvider} from "react-hook-form";
-import AuthLayout from "@/components/layouts/AuthLayout";
+import AuthLayout from "@/components/layouts/auth-layout";
 import InputGroup from "@/components/forms/input-group";
 import {Card} from "@/components/ui/card";
 import Title from "@/components/ui/title";

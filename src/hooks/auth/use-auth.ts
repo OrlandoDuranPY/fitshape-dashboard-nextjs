@@ -2,7 +2,7 @@ import {apiRequest} from "@/lib/api/client/axios";
 import {ENDPOINTS} from "@/lib/api/endpoints";
 import type {ApiResponse} from "@/lib/api/interfaces/api-response.interface";
 import type {ApiValidationError} from "@/lib/api/interfaces/api.validation-error.interface";
-import {useAuthStore} from "@/lib/store/authStore";
+import {useAuthStore} from "@/lib/store/auth-store";
 import {useState} from "react";
 import {toast} from "sonner";
 

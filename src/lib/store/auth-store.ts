@@ -1,4 +1,4 @@
-import {UserInterface} from "@/interfaces/UserInterface";
+import {UserInterface} from "@/interfaces/user-interface";
 import CryptoJS from "crypto-js";
 import {create} from "zustand";
 import {persist, createJSONStorage} from "zustand/middleware";

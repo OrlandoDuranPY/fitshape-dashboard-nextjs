@@ -7,11 +7,11 @@ import {
   registerSchema,
   type RegisterSchema,
 } from "@/lib/schemas/registerSchema";
-import AuthLayout from "@/components/layouts/AuthLayout";
+import AuthLayout from "@/components/layouts/auth-layout";
 import {Card} from "@/components/ui/card";
 import Title from "@/components/ui/title";
 import {ROUTES} from "@/routing/routes";
-import RegisterStepper from "@/components/auth/RegisterStepper";
+import RegisterStepper from "@/components/auth/register-stepper";
 import {useAuth} from "@/hooks/auth/use-auth";
 import {useRouter} from "next/router";
 
