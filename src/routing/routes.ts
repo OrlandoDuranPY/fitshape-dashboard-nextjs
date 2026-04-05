@@ -13,4 +13,17 @@ export const ROUTES = {
     termsAndConditions: "/auth/terms-and-conditions",
     privacyPolicy: "/auth/privacy-policy",
   },
+  /* ========================================
+     = Training =
+  ========================================= */
+  training: {
+    routines: "/training/routines",
+    coachees: "/training/coachees",
+  },
+  /* ========================================
+     = Nutrition =
+  ========================================= */
+  nutrition: {
+    foods: "/nutrition/foods",
+  },
 } as const;
