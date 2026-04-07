@@ -6,7 +6,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {
   registerSchema,
   type RegisterSchema,
-} from "@/lib/schemas/registerSchema";
+} from "@/lib/schemas/auth/registerSchema";
 import AuthLayout from "@/components/layouts/auth-layout";
 import {Card} from "@/components/ui/card";
 import Title from "@/components/ui/title";
@@ -16,14 +16,28 @@ import {useAuth} from "@/hooks/auth/use-auth";
 import {useRouter} from "next/router";
 
 export default function Register() {
+  /* ========================================
+     = Composables =
+  ========================================= */
   const router = useRouter();
-  const {register: authRegister, errors: apiErrors} = useAuth();
+  const {
+    // states
+    errors: apiErrors,
+    // methods
+    register: authRegister,
+  } = useAuth();
 
+  /* ========================================
+     = Form =
+  ========================================= */
   const methods = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
     mode: "onBlur",
   });
 
+  /* ========================================
+     = Functions =
+  ========================================= */
   const onFinish = methods.handleSubmit(async (data) => {
     const payload = {
       ...data,

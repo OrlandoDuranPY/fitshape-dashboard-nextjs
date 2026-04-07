@@ -1,4 +1,4 @@
-import {UserInterface} from "@/interfaces/user-interface";
+import type {UserInterface} from "@/interfaces/user-interface";
 import CryptoJS from "crypto-js";
 import {create} from "zustand";
 import {persist, createJSONStorage} from "zustand/middleware";
@@ -17,7 +17,7 @@ interface AuthState {
 /* ========================================
    = Encrypted Storage =
 ========================================= */
-const SECRET = process.env.NEXT_PUBLIC_STORAGE_SECRET as string;
+const SECRET = process.env.STORAGE_SECRET as string;
 
 const encryptedStorage = createJSONStorage(() => ({
   getItem(key: string) {
@@ -49,12 +49,10 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
 
-      // Session management
       setSession(user, token) {
         set({user, token, isAuthenticated: true});
       },
 
-      // Clear session
       clearSession() {
         set({user: null, token: null, isAuthenticated: false});
       },

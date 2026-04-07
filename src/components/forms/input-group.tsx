@@ -2,6 +2,7 @@ import InputComponent from "./inputs/input-component";
 import SelectComponent from "./inputs/select-component";
 import DateComponent from "./inputs/date-component";
 import VerificationCodeComponent from "./inputs/verification-code-component";
+import PasswordComponent from "./inputs/password-component";
 
 /* ========================================
    = Props =
@@ -41,6 +42,17 @@ export default function InputGroup({
   if (type === "date") {
     return (
       <DateComponent
+        name={name}
+        label={label}
+        required={required}
+        placeholder={placeholder}
+      />
+    );
+  }
+
+  if (type === "password") {
+    return (
+      <PasswordComponent
         name={name}
         label={label}
         required={required}

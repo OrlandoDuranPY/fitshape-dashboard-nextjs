@@ -9,9 +9,53 @@ import {Button} from "@/components/ui/button";
 import {Checkbox} from "@/components/ui/checkbox";
 import {Label} from "@/components/ui/label";
 import {ROUTES} from "@/routing/routes";
+import {useAuth} from "@/hooks/auth/use-auth";
+import {useRouter} from "next/router";
+import {loginSchema, type LoginSchema} from "@/lib/schemas/auth/loginSchema";
+import {zodResolver} from "@hookform/resolvers/zod";
 
 export default function Login() {
-  const methods = useForm();
+  /* ========================================
+     = Composables =
+  ========================================= */
+  const router = useRouter();
+  const methods = useForm<LoginSchema>({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur",
+  });
+  const {
+    // states
+    isLoading,
+    errors: apiErrors,
+    // methods
+    login: authLogin,
+  } = useAuth();
+
+  /* ========================================
+     = Form =
+  ========================================= */
+
+  /* ========================================
+     = Functions =
+  ========================================= */
+  const onSubmit = methods.handleSubmit(async (data) => {
+    const payload = {
+      ...data,
+    };
+
+    const response = await authLogin(payload);
+
+    if (response?.status === "success") {
+      methods.reset();
+      router.push(ROUTES.home);
+    } else {
+      Object.entries(apiErrors).forEach(([field, messages]) => {
+        methods.setError(field as keyof LoginSchema, {
+          message: messages[0],
+        });
+      });
+    }
+  });
 
   return (
     <FormProvider {...methods}>
@@ -53,7 +97,7 @@ export default function Login() {
             </Link>
           </div>
 
-          <Button>Iniciar sesión</Button>
+          <Button onClick={onSubmit}>Iniciar sesión</Button>
           <p className='text-sm font-heading text-foreground/80 text-center'>
             ¿Aún no tienes una cuenta?{" "}
             <Link

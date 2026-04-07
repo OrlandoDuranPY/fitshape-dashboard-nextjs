@@ -25,7 +25,8 @@ export default function DesktopSidebar({navItems}: Props) {
           <Image
             src='/assets/img/logo.png'
             alt='Fitshape Logo'
-            fill
+            width={100}
+            height={100}
             className='object-contain'
             loading='eager'
           />

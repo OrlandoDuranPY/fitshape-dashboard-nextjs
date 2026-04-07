@@ -1,3 +1,4 @@
+import {UserInterface} from "@/interfaces/user-interface";
 import {apiRequest} from "@/lib/api/client/axios";
 import {ENDPOINTS} from "@/lib/api/endpoints";
 import type {ApiResponse} from "@/lib/api/interfaces/api-response.interface";
@@ -23,6 +24,11 @@ interface RegisterData {
   weight: string;
   height: string;
   birth_date: string;
+}
+
+interface LoginData {
+  email: string;
+  password: string;
 }
 
 export const useAuth = () => {
@@ -64,6 +70,41 @@ export const useAuth = () => {
     }
   };
 
+  /**
+   * Login
+   */
+  const login = async (
+    data: LoginData,
+  ): Promise<ApiResponse<{user: UserInterface; access_token: string}> | null> => {
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      const response = await apiRequest<
+        ApiResponse<{user: UserInterface; access_token: string}>
+      >(ENDPOINTS.AUTH.LOGIN, {
+        method: "POST",
+        data,
+      });
+
+      if (response && response.status === "success") {
+        toast.success(response.message || "Inicio de sesión exitoso");
+        if (response.data?.user && response.data?.access_token) {
+          setSession(response.data.user, response.data.access_token);
+        }
+      }
+
+      return response;
+    } catch (err) {
+      const apiError = err as ApiValidationError;
+      toast.error(apiError.message || "Error al iniciar sesión");
+      setErrors(apiError.errors ?? {});
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   /* ========================================
        = Returns =
     ========================================= */
@@ -73,5 +114,6 @@ export const useAuth = () => {
     errors,
     // methods
     register,
+    login,
   };
 };
