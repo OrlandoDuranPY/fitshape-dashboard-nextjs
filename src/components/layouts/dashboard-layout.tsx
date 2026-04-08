@@ -20,6 +20,7 @@ const navItems: NavItem[] = [
     children: [
       {label: "Rutinas", path: ROUTES.training.routines},
       {label: "Clientes", path: ROUTES.training.coachees},
+      {label: "Ejercicios", path: ROUTES.training.exercises},
     ],
   },
   {

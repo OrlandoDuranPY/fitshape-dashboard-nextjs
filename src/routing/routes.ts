@@ -19,6 +19,7 @@ export const ROUTES = {
   training: {
     routines: "/training/routines",
     coachees: "/training/coachees",
+    exercises: "/training/exercises",
   },
   /* ========================================
      = Nutrition =
