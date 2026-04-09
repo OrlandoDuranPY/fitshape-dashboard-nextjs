@@ -150,5 +150,6 @@ export const useAuth = () => {
     // methods
     register,
     login,
+    forgotPassword,
   };
 };

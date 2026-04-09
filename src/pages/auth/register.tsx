@@ -6,7 +6,7 @@ import {zodResolver} from "@hookform/resolvers/zod";
 import {
   registerSchema,
   type RegisterSchema,
-} from "@/lib/schemas/auth/registerSchema";
+} from "@/lib/schemas/auth/register-schema";
 import AuthLayout from "@/components/layouts/auth-layout";
 import {Card} from "@/components/ui/card";
 import Title from "@/components/ui/title";

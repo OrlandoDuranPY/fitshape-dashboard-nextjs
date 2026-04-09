@@ -11,7 +11,7 @@ import {Label} from "@/components/ui/label";
 import {ROUTES} from "@/routing/routes";
 import {useAuth} from "@/hooks/auth/use-auth";
 import {useRouter} from "next/router";
-import {loginSchema, type LoginSchema} from "@/lib/schemas/auth/loginSchema";
+import {loginSchema, type LoginSchema} from "@/lib/schemas/auth/login-schema";
 import {zodResolver} from "@hookform/resolvers/zod";
 
 export default function Login() {

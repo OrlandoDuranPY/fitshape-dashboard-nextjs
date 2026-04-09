@@ -8,6 +8,12 @@ import {Button} from "@/components/ui/button";
 import Link from "next/link";
 import {ROUTES} from "@/routing/routes";
 import {useAuth} from "@/hooks/auth/use-auth";
+import {useRouter} from "next/router";
+import {zodResolver} from "@hookform/resolvers/zod";
+import {
+  type ForgotPasswordSchema,
+  forgotPasswordSchema,
+} from "@/lib/schemas/auth/forgot-password-schema";
 
 export default function ForgotPassword() {
   /* ========================================
@@ -16,21 +22,45 @@ export default function ForgotPassword() {
   const {
     // states
     isLoading,
+    errors: apiErrors,
     // methods
+    forgotPassword,
   } = useAuth();
 
   /* ========================================
      = Form =
   ========================================= */
-  const methods = useForm();
+  const methods = useForm<ForgotPasswordSchema>({
+    resolver: zodResolver(forgotPasswordSchema),
+    mode: "onBlur",
+  });
 
   /* ========================================
      = Variables =
   ========================================= */
+  const router = useRouter();
 
   /* ========================================
      = Functions =
   ========================================= */
+  const onSubmit = methods.handleSubmit(async (data) => {
+    const payload = {
+      ...data,
+    };
+
+    const response = await forgotPassword(payload.email);
+
+    if (response?.status === "success") {
+      methods.reset();
+      router.push(ROUTES.home);
+    } else {
+      Object.entries(apiErrors).forEach(([field, messages]) => {
+        methods.setError(field as keyof ForgotPasswordSchema, {
+          message: messages[0],
+        });
+      });
+    }
+  });
 
   return (
     <FormProvider {...methods}>
@@ -51,7 +81,9 @@ export default function ForgotPassword() {
             placeholder='Escribe tu correo electrónico'
           />
 
-          <Button isLoading={isLoading}>Enviar código</Button>
+          <Button onClick={onSubmit} isLoading={isLoading}>
+            Enviar código
+          </Button>
 
           <p className='text-center font-heading text-sm text-foreground/80'>
             ¿Recordaste tu contraseña?{" "}
