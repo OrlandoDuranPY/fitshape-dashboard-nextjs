@@ -75,7 +75,10 @@ export const useAuth = () => {
    */
   const login = async (
     data: LoginData,
-  ): Promise<ApiResponse<{user: UserInterface; access_token: string}> | null> => {
+  ): Promise<ApiResponse<{
+    user: UserInterface;
+    access_token: string;
+  }> | null> => {
     setIsLoading(true);
     setErrors({});
 
@@ -98,6 +101,38 @@ export const useAuth = () => {
     } catch (err) {
       const apiError = err as ApiValidationError;
       toast.error(apiError.message || "Error al iniciar sesión");
+      setErrors(apiError.errors ?? {});
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Forgot password
+   */
+  const forgotPassword = async (email: string): Promise<ApiResponse | null> => {
+    setIsLoading(true);
+    setErrors({});
+    try {
+      const response = await apiRequest<ApiResponse>(
+        ENDPOINTS.AUTH.FORGOT_PASSWORD,
+        {
+          method: "POST",
+          data: {email},
+        },
+      );
+
+      if (response && response.status === "success") {
+        toast.success(response.message || "Correo de recuperación enviado");
+      }
+
+      return response;
+    } catch (err) {
+      const apiError = err as ApiValidationError;
+      toast.error(
+        apiError.message || "Error al enviar el correo de recuperación",
+      );
       setErrors(apiError.errors ?? {});
       return null;
     } finally {

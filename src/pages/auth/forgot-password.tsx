@@ -7,9 +7,30 @@ import Title from "@/components/ui/title";
 import {Button} from "@/components/ui/button";
 import Link from "next/link";
 import {ROUTES} from "@/routing/routes";
+import {useAuth} from "@/hooks/auth/use-auth";
 
 export default function ForgotPassword() {
+  /* ========================================
+     = Composables =
+  ========================================= */
+  const {
+    // states
+    isLoading,
+    // methods
+  } = useAuth();
+
+  /* ========================================
+     = Form =
+  ========================================= */
   const methods = useForm();
+
+  /* ========================================
+     = Variables =
+  ========================================= */
+
+  /* ========================================
+     = Functions =
+  ========================================= */
 
   return (
     <FormProvider {...methods}>
@@ -30,7 +51,7 @@ export default function ForgotPassword() {
             placeholder='Escribe tu correo electrónico'
           />
 
-          <Button>Enviar código</Button>
+          <Button isLoading={isLoading}>Enviar código</Button>
 
           <p className='text-center font-heading text-sm text-foreground/80'>
             ¿Recordaste tu contraseña?{" "}

@@ -4,6 +4,7 @@ import type { NextPage } from "next";
 import type { ReactElement } from "react";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import RouteGuard from "@/components/guards/RouteGuard";
 
 type NextPageWithLayout = NextPage & {
   getLayout?: (page: ReactElement) => ReactElement
@@ -18,7 +19,9 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
 
   return (
     <TooltipProvider>
-      {getLayout(<Component {...pageProps} />)}
+      <RouteGuard>
+        {getLayout(<Component {...pageProps} />)}
+      </RouteGuard>
       <Toaster />
     </TooltipProvider>
   );

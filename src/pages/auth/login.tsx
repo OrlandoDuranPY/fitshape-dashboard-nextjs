@@ -18,11 +18,6 @@ export default function Login() {
   /* ========================================
      = Composables =
   ========================================= */
-  const router = useRouter();
-  const methods = useForm<LoginSchema>({
-    resolver: zodResolver(loginSchema),
-    mode: "onBlur",
-  });
   const {
     // states
     isLoading,
@@ -34,6 +29,15 @@ export default function Login() {
   /* ========================================
      = Form =
   ========================================= */
+  const methods = useForm<LoginSchema>({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur",
+  });
+
+  /* ========================================
+     = Variables =
+  ========================================= */
+  const router = useRouter();
 
   /* ========================================
      = Functions =
@@ -97,7 +101,9 @@ export default function Login() {
             </Link>
           </div>
 
-          <Button onClick={onSubmit}>Iniciar sesión</Button>
+          <Button onClick={onSubmit} isLoading={isLoading}>
+            Iniciar sesión
+          </Button>
           <p className='text-sm font-heading text-foreground/80 text-center'>
             ¿Aún no tienes una cuenta?{" "}
             <Link
