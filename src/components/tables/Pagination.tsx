@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, type KeyboardEvent } from "react"
 import {
   ChevronsLeftIcon,
   ChevronLeftIcon,
@@ -8,6 +9,7 @@ import {
   EllipsisIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export interface PaginationMeta {
   current_page: number
@@ -56,6 +58,7 @@ function buildPageWindow(current: number, last: number): (number | "ellipsis")[]
 
 export default function Pagination({ meta, onPageChange }: PaginationProps) {
   const { current_page, last_page, total, per_page } = meta
+  const [jumpValue, setJumpValue] = useState("")
 
   const from = total === 0 ? 0 : (current_page - 1) * per_page + 1
   const to = Math.min(current_page * per_page, total)
@@ -63,10 +66,22 @@ export default function Pagination({ meta, onPageChange }: PaginationProps) {
   const isLast = current_page === last_page
   const pages = buildPageWindow(current_page, last_page)
 
+  const handleJump = () => {
+    const page = parseInt(jumpValue, 10)
+    if (!isNaN(page) && page >= 1 && page <= last_page && page !== current_page) {
+      onPageChange(page)
+    }
+    setJumpValue("")
+  }
+
+  const handleJumpKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") handleJump()
+  }
+
   return (
-    <div className="flex items-center justify-between py-3 px-1">
+    <div className="flex flex-wrap items-center justify-between gap-2 py-3 px-1">
       {/* Results range */}
-      <p className="hidden text-sm text-muted-foreground sm:block">
+      <p className="hidden text-sm text-muted-foreground sm:block font-heading">
         <span className="font-heading font-medium text-foreground">
           {from}–{to}
         </span>{" "}
@@ -76,6 +91,22 @@ export default function Pagination({ meta, onPageChange }: PaginationProps) {
         </span>{" "}
         resultados
       </p>
+
+      {/* Input salto de página */}
+      <div className="hidden sm:flex items-center gap-2 font-heading">
+        <span className="text-xs text-muted-foreground">Ir a página:</span>
+        <Input
+          type="number"
+          min={1}
+          max={last_page}
+          value={jumpValue}
+          onChange={(e) => setJumpValue(e.target.value)}
+          onKeyDown={handleJumpKeyDown}
+          onBlur={handleJump}
+          placeholder={String(current_page)}
+          className="w-16 h-8 text-center text-sm px-2"
+        />
+      </div>
 
       <div className="flex items-center gap-1 ml-auto sm:ml-0">
         {/* First page — desktop only */}

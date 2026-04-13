@@ -1,5 +1,4 @@
 import {useState} from "react";
-import {useFormContext} from "react-hook-form";
 import ErrorMessage from "@/components/ui/error-message";
 import {Label} from "@/components/ui/label";
 import {Input} from "@/components/ui/input";
@@ -9,10 +8,18 @@ import {Input} from "@/components/ui/input";
 ========================================= */
 interface InputComponentProps {
   name: string;
-  label: string;
+  label?: string;
   required?: boolean;
   placeholder?: string;
   type?: string;
+  // Modo controlado
+  value?: string;
+  onChange?: React.ChangeEventHandler<HTMLInputElement>;
+  onBlur?: React.FocusEventHandler<HTMLInputElement>;
+  inputRef?: React.Ref<HTMLInputElement>;
+  error?: string;
+  // Para tipos numéricos fuera de formulario
+  onNumericChange?: (value: string) => void;
 }
 
 const ONLY_DIGITS = /[^0-9]/g;
@@ -24,17 +31,15 @@ export default function InputComponent({
   required = false,
   placeholder,
   type = "text",
+  value,
+  onChange,
+  onBlur,
+  inputRef,
+  error,
+  onNumericChange,
 }: InputComponentProps) {
-  const {
-    register,
-    setValue,
-    formState: {errors},
-  } = useFormContext();
-
   const isNumeric = type === "number" || type === "decimal";
-  const [numericValue, setNumericValue] = useState("");
-  const errorMessage = errors[name]?.message as string | undefined;
-  const {ref, ...rest} = register(name);
+  const [numericValue, setNumericValue] = useState(value ?? "");
 
   function handleNumericChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value;
@@ -42,23 +47,25 @@ export default function InputComponent({
     if (type === "number") {
       const filtered = raw.replace(ONLY_DIGITS, "");
       setNumericValue(filtered);
-      setValue(name, filtered, {shouldValidate: true, shouldDirty: true});
+      onNumericChange?.(filtered);
     } else if (type === "decimal") {
       const cleaned = raw.replace(ONLY_DECIMAL, "");
       const parts = cleaned.split(".");
       if (parts.length > 2) return;
       if (parts[1] && parts[1].length > 2) return;
       setNumericValue(cleaned);
-      setValue(name, cleaned, {shouldValidate: true, shouldDirty: true});
+      onNumericChange?.(cleaned);
     }
   }
 
   return (
     <div className='space-y-2'>
-      <div className='flex gap-2'>
-        <Label htmlFor={name}>{label}</Label>{" "}
-        {required && <span className='text-red-500'>*</span>}
-      </div>
+      {label && (
+        <div className='flex gap-2'>
+          <Label htmlFor={name}>{label}</Label>
+          {required && <span className='text-red-500'>*</span>}
+        </div>
+      )}
       <Input
         id={name}
         placeholder={placeholder}
@@ -70,12 +77,12 @@ export default function InputComponent({
               ? "numeric"
               : undefined
         }
-        ref={ref}
-        {...(isNumeric
-          ? {value: numericValue, onChange: handleNumericChange}
-          : rest)}
+        ref={inputRef}
+        value={isNumeric ? numericValue : value}
+        onChange={isNumeric ? handleNumericChange : onChange}
+        onBlur={onBlur}
       />
-      {errorMessage && <ErrorMessage errorMessage={errorMessage} />}
+      {error && <ErrorMessage errorMessage={error} />}
     </div>
   );
 }

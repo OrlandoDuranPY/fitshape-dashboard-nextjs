@@ -1,3 +1,4 @@
+import {useFormContext} from "react-hook-form";
 import InputComponent from "./inputs/input-component";
 import SelectComponent from "./inputs/select-component";
 import DateComponent from "./inputs/date-component";
@@ -26,6 +27,15 @@ export default function InputGroup({
   options = [],
   clearable,
 }: InputGroupProps) {
+  const {
+    register,
+    setValue,
+    formState: {errors},
+  } = useFormContext();
+
+  const errorMessage = errors[name]?.message as string | undefined;
+  const {ref, onChange, onBlur} = register(name);
+
   if (type === "select") {
     return (
       <SelectComponent
@@ -78,6 +88,13 @@ export default function InputGroup({
       required={required}
       placeholder={placeholder}
       type={type}
+      inputRef={ref}
+      onChange={onChange}
+      onBlur={onBlur}
+      error={errorMessage}
+      onNumericChange={(value) =>
+        setValue(name, value, {shouldValidate: true, shouldDirty: true})
+      }
     />
   );
 }
