@@ -6,14 +6,6 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Spinner } from "@/components/ui/spinner"
 import { SearchXIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -43,81 +35,80 @@ export default function DataTable<TData>({
   })
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="rounded-xl border border-gray/20 bg-card-surface text-card-foreground overflow-hidden">
-        <Table>
-          <TableHeader className="bg-muted">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow
-                key={headerGroup.id}
-                className="hover:bg-muted border-b-2 border-border"
-              >
-                {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className="font-heading font-medium text-xs uppercase tracking-wider text-muted-foreground h-10"
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={columns.length}>
-                  <div className="flex justify-center py-16">
-                    <Spinner className="size-6 text-brand" />
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className="border-l-2 border-l-transparent hover:border-l-brand hover:bg-brand/5 transition-colors"
-                >
-                  {row.getVisibleCells().map((cell, cellIndex) => (
-                    <TableCell
-                      key={cell.id}
-                      className={cn(
-                        "text-sm py-3",
-                        cellIndex === 0
-                          ? "font-medium text-card-foreground"
-                          : "text-muted-foreground"
-                      )}
+    <div className="flex flex-col gap-3 font-heading">
+      <div className="rounded-2xl border border-border bg-card-surface overflow-hidden shadow-sm">
+        <div className="w-full overflow-x-auto">
+          <table className="w-full text-sm font-heading">
+            <thead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id} className="border-b border-border bg-muted/50">
+                  {headerGroup.headers.map((header) => (
+                    <th
+                      key={header.id}
+                      className="h-11 px-5 text-left align-middle text-xs font-semibold uppercase tracking-widest text-muted-foreground font-heading whitespace-nowrap"
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </th>
                   ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={columns.length}>
-                  <div className="flex flex-col items-center gap-3 py-12">
-                    <div className="p-3 rounded-xl bg-brand/10 text-brand">
-                      <SearchXIcon className="size-5" />
+                </tr>
+              ))}
+            </thead>
+            <tbody>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={columns.length}>
+                    <div className="flex justify-center py-16">
+                      <Spinner className="size-5 text-brand" />
                     </div>
-                    <p className="text-sm font-heading font-medium text-muted-foreground">
-                      {emptyMessage}
-                    </p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                  </td>
+                </tr>
+              ) : table.getRowModel().rows.length ? (
+                table.getRowModel().rows.map((row, rowIndex) => (
+                  <tr
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                    className={cn(
+                      "transition-colors duration-150 hover:bg-muted/40",
+                      rowIndex < table.getRowModel().rows.length - 1 && "border-b border-border/60"
+                    )}
+                  >
+                    {row.getVisibleCells().map((cell, cellIndex) => (
+                      <td
+                        key={cell.id}
+                        className={cn(
+                          "py-3.5 px-5 align-middle whitespace-nowrap font-heading",
+                          cellIndex === 0
+                            ? "font-semibold text-foreground"
+                            : "font-normal text-muted-foreground"
+                        )}
+                      >
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={columns.length}>
+                    <div className="flex flex-col items-center gap-3 py-14">
+                      <div className="p-3 rounded-xl bg-muted text-muted-foreground">
+                        <SearchXIcon className="size-5" />
+                      </div>
+                      <p className="text-sm font-medium text-muted-foreground font-heading">
+                        {emptyMessage}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
       {pagination && onPageChange && (
         <Pagination meta={pagination} onPageChange={onPageChange} />
