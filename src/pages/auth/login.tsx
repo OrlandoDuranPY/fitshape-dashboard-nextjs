@@ -64,46 +64,48 @@ export default function Login() {
   return (
     <FormProvider {...methods}>
       <section className='flex items-center justify-center min-h-screen w-full p-4'>
-        <Card className='px-4 w-full max-w-md space-y-1'>
+        <Card className='px-4 w-full max-w-md'>
           <div className='flex flex-col'>
             <Title level={2} title='Bienvenido de nuevo' />
             <p className='text-foreground/80 font-heading'>
               Tu disciplina te llevará más lejos de lo que imaginas.
             </p>
           </div>
-          <InputGroup
-            type='text'
-            name='email'
-            required
-            label='Correo electrónico'
-            placeholder='Escribe tu correo electrónico'
-          />
-          <InputGroup
-            type='password'
-            name='password'
-            required
-            label='Contraseña'
-            placeholder='Escribe tu contraseña'
-          />
+          <form onSubmit={onSubmit} className='flex flex-col gap-4'>
+            <InputGroup
+              type='text'
+              name='email'
+              required
+              label='Correo electrónico'
+              placeholder='Escribe tu correo electrónico'
+            />
+            <InputGroup
+              type='password'
+              name='password'
+              required
+              label='Contraseña'
+              placeholder='Escribe tu contraseña'
+            />
 
-          <div className='flex flex-col md:flex-row md:justify-between'>
-            <div className='flex gap-2 items-center'>
-              <Checkbox id='remember' />
-              <Label className='cursor-pointer' htmlFor='remember'>
-                Recuérdame
-              </Label>
+            <div className='flex flex-col md:flex-row md:justify-between'>
+              <div className='flex gap-2 items-center'>
+                <Checkbox id='remember' />
+                <Label className='cursor-pointer' htmlFor='remember'>
+                  Recuérdame
+                </Label>
+              </div>
+              <Link
+                href={ROUTES.auth.forgotPassword}
+                className='text-sm text-brand hover:underline font-heading'
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
             </div>
-            <Link
-              href={ROUTES.auth.forgotPassword}
-              className='text-sm text-brand hover:underline font-heading'
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </div>
 
-          <Button onClick={onSubmit} isLoading={isLoading}>
-            Iniciar sesión
-          </Button>
+            <Button type='submit' isLoading={isLoading}>
+              Iniciar sesión
+            </Button>
+          </form>
           <p className='text-sm font-heading text-foreground/80 text-center'>
             ¿Aún no tienes una cuenta?{" "}
             <Link

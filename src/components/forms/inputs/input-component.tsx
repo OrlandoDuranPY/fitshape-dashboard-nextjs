@@ -68,6 +68,7 @@ export default function InputComponent({
       )}
       <Input
         id={name}
+        name={name}
         placeholder={placeholder}
         type={isNumeric ? "text" : type}
         inputMode={
