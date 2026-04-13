@@ -1,6 +1,5 @@
 "use client"
 
-import { useState, type KeyboardEvent } from "react"
 import {
   ChevronsLeftIcon,
   ChevronLeftIcon,
@@ -9,7 +8,13 @@ import {
   EllipsisIcon,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export interface PaginationMeta {
   current_page: number
@@ -23,16 +28,11 @@ export interface PaginationMeta {
 interface PaginationProps {
   meta: PaginationMeta
   onPageChange: (page: number) => void
+  perPage?: number
+  perPageOptions?: number[]
+  onPerPageChange?: (value: number) => void
 }
 
-/**
- * Builds the page window to display:
- * Always shows first and last. Shows delta=2 pages on each side of current.
- * Inserts "ellipsis" where there are gaps.
- *
- * Examples (current=5, last=20): [1, ellipsis, 3, 4, 5, 6, 7, ellipsis, 20]
- * Examples (current=2, last=20): [1, 2, 3, 4, ellipsis, 20]
- */
 function buildPageWindow(current: number, last: number): (number | "ellipsis")[] {
   if (last <= 7) {
     return Array.from({ length: last }, (_, i) => i + 1)
@@ -56,60 +56,57 @@ function buildPageWindow(current: number, last: number): (number | "ellipsis")[]
   return pages
 }
 
-export default function Pagination({ meta, onPageChange }: PaginationProps) {
+export default function Pagination({
+  meta,
+  onPageChange,
+  perPage,
+  perPageOptions = [10, 25, 50, 100],
+  onPerPageChange,
+}: PaginationProps) {
   const { current_page, last_page, total, per_page } = meta
-  const [jumpValue, setJumpValue] = useState("")
-
   const from = total === 0 ? 0 : (current_page - 1) * per_page + 1
   const to = Math.min(current_page * per_page, total)
   const isFirst = current_page === 1
   const isLast = current_page === last_page
   const pages = buildPageWindow(current_page, last_page)
 
-  const handleJump = () => {
-    const page = parseInt(jumpValue, 10)
-    if (!isNaN(page) && page >= 1 && page <= last_page && page !== current_page) {
-      onPageChange(page)
-    }
-    setJumpValue("")
-  }
-
-  const handleJumpKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleJump()
-  }
-
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 py-3 px-1">
-      {/* Results range */}
-      <p className="hidden text-sm text-muted-foreground sm:block font-heading">
-        <span className="font-heading font-medium text-foreground">
-          {from}–{to}
-        </span>{" "}
-        de{" "}
-        <span className="font-heading font-medium text-foreground">
-          {total}
-        </span>{" "}
-        resultados
-      </p>
+    <div className="grid grid-cols-3 items-center py-3 px-1 font-heading gap-2">
 
-      {/* Input salto de página */}
-      <div className="hidden sm:flex items-center gap-2 font-heading">
-        <span className="text-xs text-muted-foreground">Ir a página:</span>
-        <Input
-          type="number"
-          min={1}
-          max={last_page}
-          value={jumpValue}
-          onChange={(e) => setJumpValue(e.target.value)}
-          onKeyDown={handleJumpKeyDown}
-          onBlur={handleJump}
-          placeholder={String(current_page)}
-          className="w-16 h-8 text-center text-sm px-2"
-        />
+      {/* Izquierda: per_page */}
+      <div className="flex items-center gap-2">
+        {onPerPageChange && (
+          <>
+            <span className="hidden sm:block text-xs text-muted-foreground">Por página:</span>
+            <Select
+              value={String(perPage ?? perPageOptions[0])}
+              onValueChange={(v) => onPerPageChange(Number(v))}
+            >
+              <SelectTrigger size="sm" className="w-16 font-heading text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {perPageOptions.map((opt) => (
+                  <SelectItem key={opt} value={String(opt)} className="font-heading text-xs">
+                    {opt}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </>
+        )}
       </div>
 
-      <div className="flex items-center gap-1 ml-auto sm:ml-0">
-        {/* First page — desktop only */}
+      {/* Centro: contador de resultados */}
+      <p className="hidden text-sm text-muted-foreground sm:block text-center">
+        <span className="font-medium text-foreground">{from}–{to}</span>
+        {" "}de{" "}
+        <span className="font-medium text-foreground">{total}</span>
+        {" "}resultados
+      </p>
+
+      {/* Derecha: botones de paginación */}
+      <div className="flex items-center gap-1 justify-end">
         <Button
           variant="outline"
           size="icon"
@@ -121,7 +118,6 @@ export default function Pagination({ meta, onPageChange }: PaginationProps) {
           <ChevronsLeftIcon className="size-4" />
         </Button>
 
-        {/* Prev */}
         <Button
           variant="outline"
           size="icon"
@@ -132,18 +128,14 @@ export default function Pagination({ meta, onPageChange }: PaginationProps) {
           <ChevronLeftIcon className="size-4" />
         </Button>
 
-        {/* Mobile: compact current/total pill */}
+        {/* Móvil: pill compacto (ocupa el espacio de las 3 columnas) */}
         <div className="flex sm:hidden h-8 items-center gap-1 rounded-lg border border-border bg-muted/50 px-3 text-sm">
-          <span className="font-heading font-medium text-foreground">
-            {current_page}
-          </span>
+          <span className="font-medium text-foreground">{current_page}</span>
           <span className="text-muted-foreground">/</span>
-          <span className="font-heading font-medium text-muted-foreground">
-            {last_page}
-          </span>
+          <span className="font-medium text-muted-foreground">{last_page}</span>
         </div>
 
-        {/* Desktop: full page window */}
+        {/* Desktop: ventana de páginas */}
         <div className="hidden sm:flex items-center gap-1">
           {pages.map((page, i) =>
             page === "ellipsis" ? (
@@ -169,7 +161,6 @@ export default function Pagination({ meta, onPageChange }: PaginationProps) {
           )}
         </div>
 
-        {/* Next */}
         <Button
           variant="outline"
           size="icon"
@@ -180,7 +171,6 @@ export default function Pagination({ meta, onPageChange }: PaginationProps) {
           <ChevronRightIcon className="size-4" />
         </Button>
 
-        {/* Last page — desktop only */}
         <Button
           variant="outline"
           size="icon"
@@ -191,6 +181,7 @@ export default function Pagination({ meta, onPageChange }: PaginationProps) {
         >
           <ChevronsRightIcon className="size-4" />
         </Button>
+
       </div>
     </div>
   )

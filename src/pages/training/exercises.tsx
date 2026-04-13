@@ -52,6 +52,18 @@ export default function Exercises() {
   const updateParams = (updates: Partial<ExerciseParams>) =>
     setParams((prev) => ({...prev, page: 1, ...updates}));
 
+  const hasActiveFilters = !!(params.search || params.difficulty || params.category_id);
+
+  const handleClearFilters = () => {
+    setParams((prev) => ({
+      ...prev,
+      page: 1,
+      search: undefined,
+      difficulty: undefined,
+      category_id: undefined,
+    }));
+  };
+
   return (
     <div>
       <DataTable
@@ -62,7 +74,10 @@ export default function Exercises() {
         onPageChange={(page) => setParams((prev) => ({...prev, page}))}
         // Búsqueda
         onSearch={(search) => updateParams({search})}
-        // Filtros extra
+        searchValue={params.search ?? ""}
+        // Filtros
+        hasActiveFilters={hasActiveFilters}
+        onClearFilters={handleClearFilters}
         filters={
           <>
             {/* Dificultad */}
@@ -80,22 +95,14 @@ export default function Exercises() {
             />
 
             {/* category_id: agregar cuando tengas el endpoint de categorías
-            <Select
+            <SelectComponent
+              name="category_id"
+              placeholder="Categoría"
               value={String(params.category_id ?? "")}
-              onValueChange={(v) =>
-                updateParams({ category_id: v === "all" ? undefined : Number(v) })
-              }
-            >
-              <SelectTrigger size="sm" className="w-36 font-heading text-xs">
-                <SelectValue placeholder="Categoría" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas</SelectItem>
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={(v) => updateParams({ category_id: v ? Number(v) : undefined })}
+              clearable
+              options={categories.map((c) => ({ value: String(c.id), label: c.name }))}
+            />
             */}
           </>
         }

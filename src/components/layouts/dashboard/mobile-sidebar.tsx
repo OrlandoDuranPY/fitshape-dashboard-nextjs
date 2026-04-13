@@ -1,11 +1,10 @@
-"use client";
-
 import {NavItem} from "@/interfaces/nav-item-interface";
 import {ChevronDown, X} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import {usePathname} from "next/navigation";
 import {useState} from "react";
+import ThemeToggle from "./theme-toggle";
 
 /* ========================================
    = Props =
@@ -66,7 +65,7 @@ export default function MobileSidebar({navItems, isOpen, onClose}: Props) {
         </div>
 
         {/* Nav items */}
-        <nav className='px-4 pb-4 flex flex-col gap-2 overflow-y-auto'>
+        <nav className='px-4 flex flex-col gap-2 overflow-y-auto flex-1'>
           {navItems.map((item, index) =>
             item.type === "link" ? (
               <Link
@@ -87,6 +86,14 @@ export default function MobileSidebar({navItems, isOpen, onClose}: Props) {
             ),
           )}
         </nav>
+
+        {/* Theme toggle */}
+        <div className='px-4 py-4 border-t border-border flex items-center gap-2'>
+          <span className='text-muted-foreground font-heading text-sm flex-1'>
+            Tema
+          </span>
+          <ThemeToggle />
+        </div>
       </aside>
     </div>
   );

@@ -10,16 +10,24 @@ import {
   type Header,
 } from "@tanstack/react-table";
 import {Spinner} from "@/components/ui/spinner";
-import {SearchXIcon, ChevronDownIcon, SearchIcon} from "lucide-react";
+import {
+  SearchXIcon,
+  ChevronDownIcon,
+  SearchIcon,
+  SlidersHorizontalIcon,
+  XIcon,
+} from "lucide-react";
 import {cn} from "@/lib/utils";
 import {Input} from "@/components/ui/input";
+import {Button} from "@/components/ui/button";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerClose,
+  DrawerFooter,
+} from "@/components/ui/drawer";
 import Pagination, {type PaginationMeta} from "@/components/tables/Pagination";
 
 interface DataTableProps<TData> {
@@ -31,9 +39,12 @@ interface DataTableProps<TData> {
   emptyMessage?: string;
   // Búsqueda
   onSearch?: (value: string) => void;
-  // Slot libre para filtros extra (category_id, difficulty, etc.)
+  searchValue?: string; // valor controlado externamente (para reset)
+  // Slot libre para filtros extra
   filters?: ReactNode;
-  // Registros por página
+  hasActiveFilters?: boolean;
+  onClearFilters?: () => void;
+  // Registros por página (se pasan a Pagination)
   perPage?: number;
   perPageOptions?: number[];
   onPerPageChange?: (value: number) => void;
@@ -62,7 +73,6 @@ function MobileRow<TData>({
         !isLast && "border-b border-border/60",
       )}
     >
-      {/* Fila principal: primeras 2 columnas + toggle */}
       <div className='flex items-center justify-between gap-3'>
         <div className='flex flex-col gap-1.5 min-w-0'>
           {mainCells.map((cell, i) => {
@@ -112,7 +122,6 @@ function MobileRow<TData>({
         )}
       </div>
 
-      {/* Columnas extra con animación grid-rows */}
       {hasExtra && (
         <div
           className={cn(
@@ -158,7 +167,7 @@ function MobileRow<TData>({
 }
 
 // ── DataTable ────────────────────────────────────────────────
-const DEFAULT_PER_PAGE_OPTIONS = [5, 10, 25, 50, 100];
+const DEFAULT_PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
 export default function DataTable<TData>({
   data,
@@ -168,22 +177,37 @@ export default function DataTable<TData>({
   isLoading = false,
   emptyMessage = "No hay resultados.",
   onSearch,
+  searchValue,
   filters,
+  hasActiveFilters = false,
+  onClearFilters,
   perPage,
   perPageOptions = DEFAULT_PER_PAGE_OPTIONS,
   onPerPageChange,
 }: DataTableProps<TData>) {
   const [searchInput, setSearchInput] = useState("");
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
-  // Ref para siempre tener la última versión de onSearch sin incluirla en deps
   const onSearchRef = useRef(onSearch);
   onSearchRef.current = onSearch;
 
-  // Solo dispara el debounce cuando el usuario escribe, no en el mount inicial
+  // Sincroniza el buscador cuando el padre resetea searchValue
+  const isExternalReset = useRef(false);
+  useEffect(() => {
+    if (searchValue !== undefined && searchValue !== searchInput) {
+      isExternalReset.current = true;
+      setSearchInput(searchValue);
+    }
+  }, [searchValue]);
+
   const isFirstRender = useRef(true);
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
+      return;
+    }
+    if (isExternalReset.current) {
+      isExternalReset.current = false;
       return;
     }
     const timer = setTimeout(() => onSearchRef.current?.(searchInput), 400);
@@ -198,7 +222,9 @@ export default function DataTable<TData>({
 
   const rows = table.getRowModel().rows;
   const headers = table.getHeaderGroups()[0]?.headers ?? [];
-  const hasToolbar = !!(onSearch || filters || onPerPageChange);
+  const hasSearch = !!onSearch;
+  const hasFilters = !!filters;
+  const hasToolbar = hasSearch || hasFilters;
 
   const emptyState = (
     <div className='flex flex-col items-center gap-3 py-14'>
@@ -217,58 +243,56 @@ export default function DataTable<TData>({
     </div>
   );
 
+  const searchInput_ = (
+    <div className='relative flex-1 min-w-48'>
+      <SearchIcon className='absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none' />
+      <Input
+        placeholder='Buscar...'
+        value={searchInput}
+        onChange={(e) => setSearchInput(e.target.value)}
+        className='pl-8 text-sm'
+      />
+    </div>
+  );
+
   return (
     <div className='flex flex-col gap-3 font-heading'>
-      <div className='rounded-2xl border border-border bg-card-surface overflow-hidden shadow-sm'>
-        {/* ── Toolbar: búsqueda + filtros + per_page ── */}
+      <div className='rounded-2xl border border-border bg-card-surface overflow-hidden'>
+        {/* ── Toolbar desktop (md+): filtros inline + búsqueda ── */}
         {hasToolbar && (
-          <div className='flex flex-wrap items-center gap-2 p-3 border-b border-border/60'>
-            {onSearch && (
-              <div className='relative flex-1 min-w-48'>
-                <SearchIcon className='absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none' />
-                <Input
-                  placeholder='Buscar...'
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  className='pl-8 text-sm'
-                />
-              </div>
-            )}
-
-            {/* Slot libre para filtros custom */}
-            {filters && (
+          <div className='hidden md:flex flex-wrap items-center gap-2 p-3 border-b border-border/60'>
+            {hasFilters && (
               <div className='flex items-center gap-2 flex-wrap'>{filters}</div>
             )}
+            {hasActiveFilters && onClearFilters && (
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={onClearFilters}
+                className='h-8 gap-1.5 font-heading text-xs text-muted-foreground hover:text-foreground'
+              >
+                <XIcon className='size-3.5' />
+                Limpiar filtros
+              </Button>
+            )}
+            {hasSearch && searchInput_}
+          </div>
+        )}
 
-            {/* Per page */}
-            {onPerPageChange && (
-              <div className='flex items-center gap-2 ml-auto'>
-                <span className='text-xs text-muted-foreground font-heading hidden sm:block'>
-                  Por página:
-                </span>
-                <Select
-                  value={String(perPage ?? perPageOptions[0])}
-                  onValueChange={(v) => onPerPageChange(Number(v))}
-                >
-                  <SelectTrigger
-                    size='sm'
-                    className='w-16 font-heading text-xs'
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {perPageOptions.map((opt) => (
-                      <SelectItem
-                        key={opt}
-                        value={String(opt)}
-                        className='font-heading text-xs'
-                      >
-                        {opt}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+        {/* ── Toolbar móvil (<md): búsqueda + botón filtros ── */}
+        {hasToolbar && (
+          <div className='md:hidden flex items-center gap-2 p-3 border-b border-border/60'>
+            {hasSearch && searchInput_}
+            {hasFilters && (
+              <Button
+                variant='outline'
+                size='sm'
+                className='shrink-0 h-8 gap-1.5 font-heading text-xs'
+                onClick={() => setFiltersOpen(true)}
+              >
+                <SlidersHorizontalIcon className='size-3.5' />
+                Filtros
+              </Button>
             )}
           </div>
         )}
@@ -358,7 +382,54 @@ export default function DataTable<TData>({
       </div>
 
       {pagination && onPageChange && (
-        <Pagination meta={pagination} onPageChange={onPageChange} />
+        <Pagination
+          meta={pagination}
+          onPageChange={onPageChange}
+          perPage={perPage}
+          perPageOptions={perPageOptions}
+          onPerPageChange={onPerPageChange}
+        />
+      )}
+
+      {/* ── Drawer filtros móvil ── */}
+      {hasFilters && (
+        <Drawer
+          open={filtersOpen}
+          onOpenChange={setFiltersOpen}
+          direction='bottom'
+        >
+          <DrawerContent>
+            <DrawerHeader className='flex flex-row items-center justify-between'>
+              <DrawerTitle>Filtros</DrawerTitle>
+              <DrawerClose asChild>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='font-heading text-xs'
+                >
+                  Cerrar
+                </Button>
+              </DrawerClose>
+            </DrawerHeader>
+            <div className='flex flex-col gap-4 p-4 pt-0'>{filters}</div>
+            {hasActiveFilters && onClearFilters && (
+              <DrawerFooter className='pt-0'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  onClick={() => {
+                    onClearFilters();
+                    setFiltersOpen(false);
+                  }}
+                  className='w-full gap-1.5 font-heading text-xs'
+                >
+                  <XIcon className='size-3.5' />
+                  Limpiar filtros
+                </Button>
+              </DrawerFooter>
+            )}
+          </DrawerContent>
+        </Drawer>
       )}
     </div>
   );
