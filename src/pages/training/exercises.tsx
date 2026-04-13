@@ -38,7 +38,7 @@ export default function Exercises() {
   }, [page]);
 
   return (
-    <div className="p-6">
+    <div>
       <DataTable
         data={exercises?.exercises ?? []}
         columns={columns}

@@ -9,6 +9,7 @@ import {
 import {Menu} from "lucide-react";
 import {usePathname} from "next/navigation";
 import React from "react";
+import ThemeToggle from "./theme-toggle";
 
 interface Props {
   onMenuClick: () => void;
@@ -74,7 +75,7 @@ export default function TopBar({onMenuClick, navItems}: Props) {
 
       <div className='hidden lg:flex gap-3 items-center'>
         {/* Modo claro/oscuro  */}
-        {/* <LightDarkModeComponent /> */}
+        <ThemeToggle />
 
         {/* Dropdown de usuario */}
         {/* <UserDropdownComponent /> */}

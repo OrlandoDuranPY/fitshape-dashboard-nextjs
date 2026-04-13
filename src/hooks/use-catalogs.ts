@@ -33,7 +33,7 @@ export const useCatalogs = () => {
       if (response && response.status === "success") {
         // Mapear al formato esperado por el select { value, label }
         const mappedGenders = (
-          response.data as {id: string; name: string}[]
+          response.data as unknown as {id: string; name: string}[]
         ).map((gender) => ({
           value: gender.id,
           label: gender.name,

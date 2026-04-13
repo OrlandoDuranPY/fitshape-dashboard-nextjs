@@ -6,7 +6,7 @@ import {ReactElement} from "react";
 
 const cards = [
   {
-    label: "Rutinas pendientes",
+    title: "Rutinas pendientes",
     value: 5,
     icon: Dumbbell,
     path: ROUTES.training.routines,
@@ -14,7 +14,7 @@ const cards = [
     stat: {label: "5 rutinas pendientes"},
   },
   {
-    label: "Rutinas pendientes",
+    title: "Rutinas pendientes",
     value: 5,
     icon: Dumbbell,
     path: ROUTES.training.routines,
@@ -22,7 +22,7 @@ const cards = [
     stat: {label: "5 rutinas pendientes"},
   },
   {
-    label: "Rutinas pendientes",
+    title: "Rutinas pendientes",
     value: 5,
     icon: Dumbbell,
     path: ROUTES.training.routines,
@@ -30,7 +30,7 @@ const cards = [
     stat: {label: "5 rutinas pendientes"},
   },
   {
-    label: "Rutinas pendientes",
+    title: "Rutinas pendientes",
     value: 5,
     icon: Dumbbell,
     path: ROUTES.training.routines,
@@ -38,7 +38,7 @@ const cards = [
     stat: {label: "5 rutinas pendientes"},
   },
   {
-    label: "Rutinas pendientes",
+    title: "Rutinas pendientes",
     value: 5,
     icon: Dumbbell,
     path: ROUTES.training.routines,
@@ -52,7 +52,7 @@ export default function Home() {
     <div>
       <div className='grid md:grid-cols-2 lg:grid-cols-5 gap-4'>
         {cards.map((card, index) => (
-          <MetricCard key={index} />
+          <MetricCard key={index} {...card} />
         ))}
       </div>
     </div>
