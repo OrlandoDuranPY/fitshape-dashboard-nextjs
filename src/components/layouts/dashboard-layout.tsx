@@ -18,6 +18,7 @@ const navItems: NavItem[] = [
     label: "Entrenamiento",
     icon: Dumbbell,
     children: [
+      {label: "Planes de entrenamiento", path: ROUTES.training.trainingPlans},
       {label: "Rutinas", path: ROUTES.training.routines},
       {label: "Clientes", path: ROUTES.training.coachees},
       {label: "Ejercicios", path: ROUTES.training.exercises},

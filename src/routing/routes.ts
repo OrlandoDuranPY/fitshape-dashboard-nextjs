@@ -17,6 +17,7 @@ export const ROUTES = {
      = Training =
   ========================================= */
   training: {
+    trainingPlans: "/training/plans",
     routines: "/training/routines",
     coachees: "/training/coachees",
     exercises: "/training/exercises",
