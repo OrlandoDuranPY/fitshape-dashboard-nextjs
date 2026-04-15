@@ -1,4 +1,4 @@
 export const TRAINING = {
   EXERCISES: "/exercises",
-  PLANS: "/plans",
+  PLANS: "/training-plans",
 };

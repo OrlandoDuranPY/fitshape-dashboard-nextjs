@@ -37,7 +37,7 @@ export interface TrainingPlan {
 }
 
 export interface PaginatedTrainingPlans {
-  plans: TrainingPlan[];
+  training_plans: TrainingPlan[];
   current_page: number;
   per_page: number;
   total: number;

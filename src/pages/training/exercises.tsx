@@ -38,6 +38,9 @@ interface ExerciseParams {
 
 /* ── Página ───────────────────────────────────────────────── */
 export default function Exercises() {
+  /* ========================================
+     = Composables =
+  ========================================= */
   const {isLoading, exercises, getExercices} = useTraining();
 
   const [params, setParams] = useState<ExerciseParams>({
@@ -52,7 +55,11 @@ export default function Exercises() {
   const updateParams = (updates: Partial<ExerciseParams>) =>
     setParams((prev) => ({...prev, page: 1, ...updates}));
 
-  const hasActiveFilters = !!(params.search || params.difficulty || params.category_id);
+  const hasActiveFilters = !!(
+    params.search ||
+    params.difficulty ||
+    params.category_id
+  );
 
   const handleClearFilters = () => {
     setParams((prev) => ({
