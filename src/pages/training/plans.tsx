@@ -7,9 +7,14 @@ import {usePlans} from "@/hooks/training/use-plans";
 import MetricCard, {type MetricCardProps} from "@/components/ui/metric-card";
 import type {TrainingPlan} from "@/lib/api/interfaces/training.interface";
 import {formatDate} from "@/lib/utils";
-import {ROUTES} from "@/routing/routes";
 import {ColumnDef} from "@tanstack/react-table";
-import {Dumbbell, Plus, Users} from "lucide-react";
+import {
+  CalendarCheck2,
+  CalendarX2,
+  Plus,
+  SquareChartGantt,
+  Users,
+} from "lucide-react";
 import {ReactElement, useEffect, useState} from "react";
 
 /* ========================================
@@ -54,19 +59,19 @@ const cards: MetricCardProps[] = [
   {
     title: "Planes creados este mes",
     value: 20,
-    icon: Dumbbell,
+    icon: SquareChartGantt,
     stat: {label: "+5 este mes", variant: "success"},
   },
   {
     title: "Planes activos",
     value: 20,
-    icon: Dumbbell,
+    icon: CalendarCheck2,
     stat: {label: "+5 este mes", variant: "success"},
   },
   {
     title: "Planes expirados",
     value: 20,
-    icon: Dumbbell,
+    icon: CalendarX2,
     stat: {label: "+5 este mes", variant: "warning"},
   },
 ];
