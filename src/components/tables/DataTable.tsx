@@ -185,7 +185,7 @@ export default function DataTable<TData>({
   perPageOptions = DEFAULT_PER_PAGE_OPTIONS,
   onPerPageChange,
 }: DataTableProps<TData>) {
-  const [searchInput, setSearchInput] = useState("");
+  const [searchInput, setSearchInput] = useState(searchValue ?? "");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const onSearchRef = useRef(onSearch);
@@ -200,12 +200,12 @@ export default function DataTable<TData>({
     }
   }, [searchValue]);
 
-  const isFirstRender = useRef(true);
+  // prevSearchInput evita disparar onSearch si el valor no cambió realmente
+  // (esto previene llamadas extra en React StrictMode que reutiliza refs entre montajes)
+  const prevSearchInput = useRef(searchValue ?? "");
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
+    if (searchInput === prevSearchInput.current) return;
+    prevSearchInput.current = searchInput;
     if (isExternalReset.current) {
       isExternalReset.current = false;
       return;

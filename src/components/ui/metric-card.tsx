@@ -56,20 +56,21 @@ export default function MetricCard({
 }: MetricCardProps) {
 
   return (
-    <Card>
+    <Card className="gap-3 py-3 md:gap-4 md:py-4">
       {/* Top row: title + icon */}
-      <div className='flex items-start justify-between gap-2 px-4'>
-        <Title level={5} title={title} className='text-foreground' />
-        <div className='shrink-0 p-2 rounded-lg bg-brand/10 text-brand'>
-          <Icon size={iconSize} />
+      <div className='flex items-start justify-between gap-2 px-3 md:px-4'>
+        <Title level={5} title={title} className='text-foreground text-sm md:text-base' />
+        <div className='shrink-0 p-1.5 md:p-2 rounded-lg bg-brand/10 text-brand'>
+          <Icon size={15} className="md:hidden" />
+          <Icon size={iconSize} className="hidden md:block" />
         </div>
       </div>
 
       {/* Value */}
-      <div className='px-4'>
+      <div className='px-3 md:px-4'>
         <span
           className={cn(
-            "font-heading font-bold text-3xl tracking-tight transition-colors",
+            "font-heading font-bold text-2xl md:text-3xl tracking-tight transition-colors",
             highlight ? "text-brand" : "text-foreground",
           )}
         >
@@ -79,7 +80,7 @@ export default function MetricCard({
 
       {/* Bottom row: stat badge + link */}
       {(stat || (path && pathText)) && (
-        <div className='flex items-center justify-between gap-2 px-4'>
+        <div className='flex items-center justify-between gap-2 px-3 md:px-4'>
           {stat && (
             <Badge
               className={cn(
