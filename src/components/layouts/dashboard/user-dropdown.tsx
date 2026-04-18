@@ -32,7 +32,9 @@ function UserDropdownComponent() {
           <UserIcon />
           Perfil
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => router.push(ROUTES.account.subscription)}>
+        <DropdownMenuItem
+          onClick={() => router.push(ROUTES.account.subscription)}
+        >
           <CreditCardIcon />
           Suscripción
         </DropdownMenuItem>

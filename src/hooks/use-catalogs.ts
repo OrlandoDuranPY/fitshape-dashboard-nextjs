@@ -12,6 +12,7 @@ export const useCatalogs = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [genders, setGenders] = useState<{value: string; label: string}[]>([]);
+  const [coaches, setCoaches] = useState<{value: string; label: string}[]>([]);
 
   /* ========================================
      = Requests =
@@ -48,6 +49,36 @@ export const useCatalogs = () => {
     }
   };
 
+  /**
+   * Coaches catalog
+   */
+  const getCoaches = async () => {
+    setIsLoading(true);
+    try {
+      const response = await apiRequest<ApiResponse>(
+        ENDPOINTS.CATALOGS.COACHES,
+        {
+          method: "GET",
+        },
+      );
+
+      if (response && response.status === "success") {
+        const mappedCoaches = (
+          response.data as unknown as {uuid: string; full_name: string}[]
+        ).map((coach) => ({
+          value: coach.uuid,
+          label: coach.full_name,
+        }));
+        setCoaches(mappedCoaches);
+      }
+    } catch (err) {
+      const apiError = err as ApiValidationError;
+      toast.error(apiError.message || "Error al cargar los coaches");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   /* ========================================
      = Returns =
   ========================================= */
@@ -56,7 +87,9 @@ export const useCatalogs = () => {
     isLoading,
     errors,
     genders,
+    coaches,
     // methods
     getGenders,
+    getCoaches,
   };
 };

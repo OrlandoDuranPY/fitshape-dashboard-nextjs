@@ -4,6 +4,8 @@ import SelectComponent from "./inputs/select-component";
 import DateComponent from "./inputs/date-component";
 import VerificationCodeComponent from "./inputs/verification-code-component";
 import PasswordComponent from "./inputs/password-component";
+import ComboboxComponent from "./inputs/combobox-component";
+import TextAreaComponent from "./inputs/text-area-component";
 
 /* ========================================
    = Props =
@@ -16,6 +18,8 @@ interface InputGroupProps {
   type?: string;
   options?: {value: string; label: string}[];
   clearable?: boolean;
+  maxLength?: number;
+  maxDigits?: number;
 }
 
 export default function InputGroup({
@@ -26,6 +30,8 @@ export default function InputGroup({
   type = "text",
   options = [],
   clearable,
+  maxLength,
+  maxDigits,
 }: InputGroupProps) {
   const {
     register,
@@ -34,7 +40,38 @@ export default function InputGroup({
   } = useFormContext();
 
   const errorMessage = errors[name]?.message as string | undefined;
-  const {ref, onChange, onBlur} = register(name);
+  const {ref, onChange, onBlur} = register(name, {
+    valueAsNumber: type === "number",
+  });
+
+  if (type === "textarea") {
+    return (
+      <TextAreaComponent
+        name={name}
+        label={label}
+        required={required}
+        placeholder={placeholder}
+        inputRef={ref}
+        onChange={onChange}
+        onBlur={onBlur}
+        error={errorMessage}
+        maxLength={maxLength}
+      />
+    );
+  }
+
+  if (type === "combobox") {
+    return (
+      <ComboboxComponent
+        name={name}
+        label={label}
+        required={required}
+        placeholder={placeholder}
+        options={options}
+        clearable={clearable}
+      />
+    );
+  }
 
   if (type === "select") {
     return (
@@ -48,7 +85,6 @@ export default function InputGroup({
       />
     );
   }
-
   if (type === "date") {
     return (
       <DateComponent
@@ -95,6 +131,7 @@ export default function InputGroup({
       onNumericChange={(value) =>
         setValue(name, value, {shouldValidate: true, shouldDirty: true})
       }
+      maxDigits={maxDigits}
     />
   );
 }

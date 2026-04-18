@@ -20,6 +20,7 @@ interface InputComponentProps {
   error?: string;
   // Para tipos numéricos fuera de formulario
   onNumericChange?: (value: string) => void;
+  maxDigits?: number;
 }
 
 const ONLY_DIGITS = /[^0-9]/g;
@@ -37,15 +38,22 @@ export default function InputComponent({
   inputRef,
   error,
   onNumericChange,
+  maxDigits,
 }: InputComponentProps) {
   const isNumeric = type === "number" || type === "decimal";
   const [numericValue, setNumericValue] = useState(value ?? "");
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    const allowed = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Enter"];
+    if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) e.preventDefault();
+  }
 
   function handleNumericChange(e: React.ChangeEvent<HTMLInputElement>) {
     const raw = e.target.value;
 
     if (type === "number") {
       const filtered = raw.replace(ONLY_DIGITS, "");
+      if (maxDigits !== undefined && filtered.length > maxDigits) return;
       setNumericValue(filtered);
       onNumericChange?.(filtered);
     } else if (type === "decimal") {
@@ -81,6 +89,7 @@ export default function InputComponent({
         ref={inputRef}
         value={isNumeric ? numericValue : value}
         onChange={isNumeric ? handleNumericChange : onChange}
+        onKeyDown={type === "number" ? handleKeyDown : undefined}
         onBlur={onBlur}
       />
       {error && <ErrorMessage errorMessage={error} />}
