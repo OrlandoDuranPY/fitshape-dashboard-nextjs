@@ -1,4 +1,5 @@
 import Image from "next/image";
+import {useRouter} from "next/router";
 import {CreditCardIcon, LogOutIcon, SettingsIcon, UserIcon} from "lucide-react";
 import {
   DropdownMenu,
@@ -8,9 +9,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {useAuth} from "@/hooks/auth/use-auth";
+import {ROUTES} from "@/routing/routes";
 
 function UserDropdownComponent() {
   const {logout} = useAuth();
+  const router = useRouter();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -25,15 +28,15 @@ function UserDropdownComponent() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align='end' className='bg-card-surface'>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push(ROUTES.account.profile)}>
           <UserIcon />
           Perfil
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push(ROUTES.account.subscription)}>
           <CreditCardIcon />
           Suscripción
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push(ROUTES.account.settings)}>
           <SettingsIcon />
           Ajustes
         </DropdownMenuItem>

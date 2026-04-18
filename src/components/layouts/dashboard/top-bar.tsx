@@ -11,13 +11,22 @@ import {usePathname} from "next/navigation";
 import React from "react";
 import ThemeToggle from "./theme-toggle";
 import UserDropdownComponent from "./user-dropdown";
+import {ROUTES} from "@/routing/routes";
 
 interface Props {
   onMenuClick: () => void;
   navItems: NavItem[];
 }
 
+const STATIC_CRUMBS: Record<string, {label: string}[]> = {
+  [ROUTES.account.profile]: [{label: "Cuenta"}, {label: "Perfil"}],
+  [ROUTES.account.subscription]: [{label: "Cuenta"}, {label: "Suscripción"}],
+  [ROUTES.account.settings]: [{label: "Cuenta"}, {label: "Ajustes"}],
+};
+
 function getBreadcrumbs(pathname: string, navItems: NavItem[]) {
+  if (STATIC_CRUMBS[pathname]) return STATIC_CRUMBS[pathname];
+
   for (const item of navItems) {
     if (item.type === "link" && item.path === pathname) {
       return [{label: item.label}];

@@ -29,4 +29,12 @@ export const ROUTES = {
   nutrition: {
     foods: "/nutrition/foods",
   },
+  /* ========================================
+     = Account =
+  ========================================= */
+  account: {
+    profile: "/account/profile",
+    subscription: "/account/subscription",
+    settings: "/account/settings",
+  },
 } as const;
