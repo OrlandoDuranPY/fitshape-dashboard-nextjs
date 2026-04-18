@@ -10,6 +10,7 @@ import {Menu} from "lucide-react";
 import {usePathname} from "next/navigation";
 import React from "react";
 import ThemeToggle from "./theme-toggle";
+import UserDropdownComponent from "./user-dropdown";
 
 interface Props {
   onMenuClick: () => void;
@@ -29,7 +30,11 @@ function getBreadcrumbs(pathname: string, navItems: NavItem[]) {
       for (const child of item.children) {
         const sub = child.subRoutes?.find((s) => s.path === pathname);
         if (sub) {
-          return [{label: item.label}, {label: child.label}, {label: sub.label}];
+          return [
+            {label: item.label},
+            {label: child.label},
+            {label: sub.label},
+          ];
         }
       }
     }
@@ -84,7 +89,7 @@ export default function TopBar({onMenuClick, navItems}: Props) {
         <ThemeToggle />
 
         {/* Dropdown de usuario */}
-        {/* <UserDropdownComponent /> */}
+        <UserDropdownComponent />
       </div>
     </div>
   );

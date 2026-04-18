@@ -57,6 +57,7 @@ export const useAuthStore = create<AuthState>()(
       // Clear session
       clearSession() {
         set({user: null, token: null, isAuthenticated: false});
+        localStorage.removeItem("fitshape_auth");
       },
     }),
     {

@@ -140,6 +140,33 @@ export const useAuth = () => {
     }
   };
 
+  /**
+   * Logout
+   */
+  const logout = async (): Promise<ApiResponse | null> => {
+    setIsLoading(true);
+    setErrors({});
+    try {
+      const response = await apiRequest<ApiResponse>(ENDPOINTS.AUTH.LOGOUT, {
+        method: "POST",
+      });
+
+      if (response && response.status === "success") {
+        toast.success(response.message || "Cerrar sesión exitoso");
+      }
+
+      return response;
+    } catch (err) {
+      const apiError = err as ApiValidationError;
+      toast.error(apiError.message || "Error al cerrar sesión");
+      setErrors(apiError.errors ?? {});
+      return null;
+    } finally {
+      clearSession();
+      setIsLoading(false);
+    }
+  };
+
   /* ========================================
        = Returns =
     ========================================= */
@@ -151,5 +178,6 @@ export const useAuth = () => {
     register,
     login,
     forgotPassword,
+    logout,
   };
 };
