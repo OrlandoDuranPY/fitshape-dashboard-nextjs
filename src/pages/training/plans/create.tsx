@@ -1,8 +1,15 @@
 import DashboardLayout from "@/components/layouts/dashboard-layout";
+import {Card} from "@/components/ui/card";
 import {ReactElement} from "react";
 
 export default function CreatePlan() {
-  return <div>Create</div>;
+  return (
+    <section>
+      <Card>
+        <div className='px-4 w-full'></div>
+      </Card>
+    </section>
+  );
 }
 
 CreatePlan.getLayout = function getLayout(page: ReactElement) {
