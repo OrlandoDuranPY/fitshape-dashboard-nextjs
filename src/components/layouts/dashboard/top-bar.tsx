@@ -26,6 +26,12 @@ function getBreadcrumbs(pathname: string, navItems: NavItem[]) {
       if (child) {
         return [{label: item.label}, {label: child.label}];
       }
+      for (const child of item.children) {
+        const sub = child.subRoutes?.find((s) => s.path === pathname);
+        if (sub) {
+          return [{label: item.label}, {label: child.label}, {label: sub.label}];
+        }
+      }
     }
   }
   return [];

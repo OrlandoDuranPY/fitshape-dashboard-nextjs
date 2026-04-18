@@ -5,6 +5,7 @@ import {ROUTES} from "@/routing/routes";
 import {NavItem} from "@/interfaces/nav-item-interface";
 import MobileSidebar from "./dashboard/mobile-sidebar";
 import {useState} from "react";
+import Footer from "./dashboard/footer";
 
 const navItems: NavItem[] = [
   {
@@ -18,7 +19,11 @@ const navItems: NavItem[] = [
     label: "Entrenamiento",
     icon: Dumbbell,
     children: [
-      {label: "Planes de entrenamiento", path: ROUTES.training.plans},
+      {
+        label: "Planes de entrenamiento",
+        path: ROUTES.training.plans,
+        subRoutes: [{label: "Crear plan", path: ROUTES.training.plansCreate}],
+      },
       {label: "Rutinas", path: ROUTES.training.routines},
       {label: "Clientes", path: ROUTES.training.coachees},
       {label: "Ejercicios", path: ROUTES.training.exercises},
@@ -56,6 +61,7 @@ export default function DashboardLayout({
 
         {/* Contenido principal */}
         <div className='flex-1 overflow-y-auto p-4'>{children}</div>
+        <Footer />
       </main>
     </section>
   );

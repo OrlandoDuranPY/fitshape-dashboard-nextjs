@@ -11,7 +11,11 @@ export interface NavItemDropdown {
   type: "dropdown";
   label: string;
   icon: LucideIcon;
-  children: {label: string; path: string}[];
+  children: {
+    label: string;
+    path: string;
+    subRoutes?: {label: string; path: string}[];
+  }[];
 }
 
 export type NavItem = NavItemLink | NavItemDropdown;

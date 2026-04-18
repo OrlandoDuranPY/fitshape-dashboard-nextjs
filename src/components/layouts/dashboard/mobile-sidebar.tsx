@@ -108,7 +108,9 @@ const MobileDropdownItem = ({
 }) => {
   const pathname = usePathname();
   const isAnyChildActive = item.children.some(
-    (child) => pathname === child.path,
+    (child) =>
+      pathname === child.path ||
+      child.subRoutes?.some((s) => s.path === pathname),
   );
   const [open, setOpen] = useState(isAnyChildActive);
 
@@ -142,7 +144,8 @@ const MobileDropdownItem = ({
               href={child.path}
               onClick={onClose}
               className={`px-3 py-1.5 rounded-md font-heading text-sm font-medium transition-colors ${
-                pathname === child.path
+                pathname === child.path ||
+                child.subRoutes?.some((s) => s.path === pathname)
                   ? "text-brand"
                   : "text-muted-foreground hover:bg-brand/10 hover:text-brand"
               }`}

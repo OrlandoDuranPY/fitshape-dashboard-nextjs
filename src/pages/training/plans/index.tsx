@@ -16,6 +16,8 @@ import {
   Users,
 } from "lucide-react";
 import {ReactElement, useEffect, useState} from "react";
+import {ROUTES} from "@/routing/routes";
+import Link from "next/link";
 
 /* ========================================
    = Variables =
@@ -128,9 +130,11 @@ export default function Plans() {
     <div>
       <div className='flex justify-between items-center mb-4'>
         <Title title='Planes de entrenamiento' level={2} />
-        <Button>
-          <Plus /> <span>Nuevo plan</span>
-        </Button>
+        <Link href={ROUTES.training.plansCreate}>
+          <Button>
+            <Plus /> <span>Nuevo plan</span>
+          </Button>
+        </Link>
       </div>
 
       <div>
