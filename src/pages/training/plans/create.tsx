@@ -6,30 +6,28 @@ import {useAuthStore} from "@/lib/store/auth-store";
 import InputGroup from "@/components/forms/input-group";
 import {useCatalogs} from "@/hooks/use-catalogs";
 import {FormProvider, useForm} from "react-hook-form";
-import {
-  trainingPlanSchema,
-  type TrainingPlanSchema,
-} from "@/lib/schemas/training/training-plan-schema";
-import {zodResolver} from "@hookform/resolvers/zod";
+import {Button} from "@/components/ui/button";
+import {usePlans} from "@/hooks/training/use-plans";
 
 export default function CreatePlan() {
   /* ========================================
      = Stores =
   ========================================= */
   const {user} = useAuthStore();
-  console.log(user);
   /* ========================================
      = Composables =
   ========================================= */
-  const {isLoading, coaches, getCoaches} = useCatalogs();
+  const {coaches, getCoaches} = useCatalogs();
+  const {isLoading: isLoadingPlans, storePlan} = usePlans();
 
   /* ========================================
      = Form =
   ========================================= */
-  const methods = useForm<TrainingPlanSchema>({
-    resolver: zodResolver(trainingPlanSchema),
-    mode: "onBlur",
-  });
+  const methods = useForm();
+
+  const onSubmit = (data: Record<string, unknown>) => {
+    storePlan(data as never);
+  };
 
   useEffect(() => {
     getCoaches();
@@ -44,7 +42,8 @@ export default function CreatePlan() {
             className='mb-4'
           />
           <FormProvider {...methods}>
-            <div className='grid lg:grid-cols-3 gap-4'>
+            <form onSubmit={methods.handleSubmit(onSubmit)}>
+            <div className='grid lg:grid-cols-3 gap-4 mb-4'>
               <InputGroup
                 name='user_uuid'
                 label='Cliente'
@@ -84,7 +83,27 @@ export default function CreatePlan() {
                 type='number'
                 maxDigits={1}
               />
+              <InputGroup
+                name='starts_at'
+                label='Comienza'
+                placeholder='Escoge la fecha de inicio'
+                required
+                type='date'
+              />
+              <InputGroup
+                name='ends_at'
+                label='Finaliza'
+                placeholder='Escoge la fecha de finalización'
+                required
+                type='date'
+              />
             </div>
+            <div className='flex justify-end'>
+              <Button type='submit' isLoading={isLoadingPlans}>
+                Guardar
+              </Button>
+            </div>
+            </form>
           </FormProvider>
         </div>
       </Card>

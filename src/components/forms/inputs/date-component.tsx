@@ -1,6 +1,6 @@
 import {useState} from "react";
 import {Controller, useFormContext} from "react-hook-form";
-import {CalendarIcon} from "lucide-react";
+import {CalendarIcon, XIcon} from "lucide-react";
 import ErrorMessage from "@/components/ui/error-message";
 import {Label} from "@/components/ui/label";
 import {Popover, PopoverContent, PopoverTrigger} from "@/components/ui/popover";
@@ -26,6 +26,7 @@ export default function DateComponent({
   const [open, setOpen] = useState(false);
   const {
     control,
+    trigger,
     formState: {errors},
   } = useFormContext();
 
@@ -56,7 +57,19 @@ export default function DateComponent({
                 {field.value
                   ? (field.value as Date).toLocaleDateString()
                   : placeholder}
-                <CalendarIcon className='size-4 text-muted-foreground' />
+                <span className='flex items-center gap-1'>
+                  {field.value && (
+                    <XIcon
+                      className='size-4 text-muted-foreground hover:text-foreground transition-colors'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        field.onChange("");
+                        trigger(name);
+                      }}
+                    />
+                  )}
+                  <CalendarIcon className='size-4 text-muted-foreground' />
+                </span>
               </button>
             </PopoverTrigger>
             <PopoverContent

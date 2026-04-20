@@ -6,6 +6,19 @@ import type {PaginatedTrainingPlans} from "@/lib/api/interfaces/training.interfa
 import {useState} from "react";
 import {toast} from "sonner";
 
+/* ========================================
+   = Interfaces =
+========================================= */
+interface StorePlanData {
+  user_uuid: string;
+  coach_uuid?: string;
+  name: string;
+  description?: string;
+  days_count: number;
+  starts_at: string;
+  ends_at: string;
+}
+
 export const usePlans = () => {
   /* ========================================
        = States =
@@ -17,6 +30,10 @@ export const usePlans = () => {
   /* ========================================
      = Requests =
   ========================================= */
+
+  /**
+   * Get plans
+   */
   const getPlans = async (params?: {
     search?: string;
     category_id?: number;
@@ -47,6 +64,40 @@ export const usePlans = () => {
     }
   };
 
+  /**
+   * Store plan
+   */
+  const storePlan = async (
+    data: StorePlanData,
+  ): Promise<ApiResponse | null> => {
+    setIsLoading(true);
+    try {
+      const response = await apiRequest<ApiResponse>(
+        ENDPOINTS.TRAINING.STORE_PLAN,
+        {
+          method: "POST",
+          data,
+        },
+      );
+
+      if (response && response.status === "success") {
+        toast.success(
+          response.message || "Plan de entrenamiento creado exitosamente.",
+        );
+      }
+      return response;
+    } catch (err) {
+      const apiError = err as ApiValidationError;
+      toast.error(
+        apiError.message || "Error al crear el plan de entrenamiento",
+      );
+      setErrors(apiError.errors ?? {});
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     // states
     isLoading,
@@ -55,5 +106,6 @@ export const usePlans = () => {
 
     // methods
     getPlans,
+    storePlan,
   };
 };
