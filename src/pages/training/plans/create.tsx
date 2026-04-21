@@ -6,6 +6,11 @@ import {useAuthStore} from "@/lib/store/auth-store";
 import InputGroup from "@/components/forms/input-group";
 import {useCatalogs} from "@/hooks/use-catalogs";
 import {FormProvider, useForm} from "react-hook-form";
+import {
+  trainingPlanSchema,
+  type TrainingPlanSchema,
+} from "@/lib/schemas/training/training-plan-schema";
+import {zodResolver} from "@hookform/resolvers/zod";
 import {Button} from "@/components/ui/button";
 import {usePlans} from "@/hooks/training/use-plans";
 
@@ -13,21 +18,38 @@ export default function CreatePlan() {
   /* ========================================
      = Stores =
   ========================================= */
-  const {user} = useAuthStore();
+  useAuthStore();
   /* ========================================
      = Composables =
   ========================================= */
-  const {coaches, getCoaches} = useCatalogs();
-  const {isLoading: isLoadingPlans, storePlan} = usePlans();
+  const {isLoading, coaches, getCoaches} = useCatalogs();
+  const {isLoading: isLoadingPlans, errors: apiErrors, storePlan} = usePlans();
 
   /* ========================================
      = Form =
   ========================================= */
-  const methods = useForm();
+  const methods = useForm<TrainingPlanSchema>({
+    resolver: zodResolver(trainingPlanSchema),
+    mode: "onBlur",
+    shouldFocusError: false,
+  });
 
-  const onSubmit = (data: Record<string, unknown>) => {
-    storePlan(data as never);
-  };
+  /* ========================================
+     = Functions =
+  ========================================= */
+  const onFinish = methods.handleSubmit(async (data) => {
+    const response = await storePlan(data);
+
+    if (response?.status === "success") {
+      methods.reset();
+    } else {
+      Object.entries(apiErrors).forEach(([field, messages]) => {
+        methods.setError(field as keyof TrainingPlanSchema, {
+          message: messages[0],
+        });
+      });
+    }
+  });
 
   useEffect(() => {
     getCoaches();
@@ -42,67 +64,67 @@ export default function CreatePlan() {
             className='mb-4'
           />
           <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit(onSubmit)}>
-            <div className='grid lg:grid-cols-3 gap-4 mb-4'>
-              <InputGroup
-                name='user_uuid'
-                label='Cliente'
-                placeholder='Escoge un cliente'
-                type='combobox'
-                options={coaches}
-                required
-              />
-              <InputGroup
-                name='coach_uuid'
-                label='Entrenador'
-                placeholder='Escoge un entrenador'
-                type='combobox'
-                options={coaches}
-                required
-              />
-              <InputGroup
-                name='name'
-                label='Nombre'
-                placeholder='Escribe el nombre'
-                required
-              />
-              <div className='lg:col-span-3'>
+            <form onSubmit={onFinish}>
+              <div className='grid lg:grid-cols-3 gap-4 mb-4'>
                 <InputGroup
-                  name='description'
-                  label='Descripción'
-                  placeholder='Escribe la descripción'
-                  type='textarea'
-                  maxLength={500}
+                  name='user_uuid'
+                  label='Cliente'
+                  placeholder='Escoge un cliente'
+                  type='combobox'
+                  options={coaches}
+                  required
                 />
+                <InputGroup
+                  name='coach_uuid'
+                  label='Entrenador'
+                  placeholder='Escoge un entrenador'
+                  type='combobox'
+                  options={coaches}
+                  required
+                />
+                <InputGroup
+                  name='name'
+                  label='Nombre'
+                  placeholder='Escribe el nombre'
+                  required
+                />
+                <InputGroup
+                  name='days_count'
+                  label='Cantidad de días'
+                  placeholder='Escribe la cantidad de días'
+                  required
+                  type='number'
+                  maxDigits={1}
+                />
+                <InputGroup
+                  name='starts_at'
+                  label='Comienza'
+                  placeholder='Escoge la fecha de inicio'
+                  required
+                  type='date'
+                />
+                <InputGroup
+                  name='ends_at'
+                  label='Finaliza'
+                  placeholder='Escoge la fecha de finalización'
+                  required
+                  type='date'
+                />
+                <div className='lg:col-span-3'>
+                  <InputGroup
+                    name='description'
+                    label='Descripción'
+                    placeholder='Escribe la descripción'
+                    type='textarea'
+                    maxLength={500}
+                  />
+                </div>
               </div>
-              <InputGroup
-                name='days_count'
-                label='Cantidad de días'
-                placeholder='Escribe la cantidad de días'
-                required
-                type='number'
-                maxDigits={1}
-              />
-              <InputGroup
-                name='starts_at'
-                label='Comienza'
-                placeholder='Escoge la fecha de inicio'
-                required
-                type='date'
-              />
-              <InputGroup
-                name='ends_at'
-                label='Finaliza'
-                placeholder='Escoge la fecha de finalización'
-                required
-                type='date'
-              />
-            </div>
-            <div className='flex justify-end'>
-              <Button type='submit' isLoading={isLoadingPlans}>
-                Guardar
-              </Button>
-            </div>
+              <div className='flex justify-end'>
+                <Button type='submit' isLoading={isLoading || isLoadingPlans}>
+                  Guardar
+                </Button>
+              </div>
             </form>
           </FormProvider>
         </div>

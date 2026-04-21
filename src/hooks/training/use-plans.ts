@@ -11,9 +11,9 @@ import {toast} from "sonner";
 ========================================= */
 interface StorePlanData {
   user_uuid: string;
-  coach_uuid?: string;
+  coach_uuid?: string | null;
   name: string;
-  description?: string;
+  description?: string | null;
   days_count: number;
   starts_at: string;
   ends_at: string;

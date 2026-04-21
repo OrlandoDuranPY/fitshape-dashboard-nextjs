@@ -1,4 +1,5 @@
 import {useState} from "react";
+import {format, parse} from "date-fns";
 import {Controller, useFormContext} from "react-hook-form";
 import {CalendarIcon, XIcon} from "lucide-react";
 import ErrorMessage from "@/components/ui/error-message";
@@ -55,7 +56,7 @@ export default function DateComponent({
                 )}
               >
                 {field.value
-                  ? (field.value as Date).toLocaleDateString()
+                  ? format(parse(field.value as string, "yyyy-MM-dd", new Date()), "dd/MM/yyyy")
                   : placeholder}
                 <span className='flex items-center gap-1'>
                   {field.value && (
@@ -78,11 +79,11 @@ export default function DateComponent({
             >
               <Calendar
                 mode='single'
-                selected={field.value as Date | undefined}
-                defaultMonth={field.value as Date | undefined}
+                selected={field.value ? parse(field.value as string, "yyyy-MM-dd", new Date()) : undefined}
+                defaultMonth={field.value ? parse(field.value as string, "yyyy-MM-dd", new Date()) : undefined}
                 captionLayout='dropdown'
                 onSelect={(date) => {
-                  field.onChange(date);
+                  field.onChange(date ? format(date, "yyyy-MM-dd") : "");
                   setOpen(false);
                 }}
               />
