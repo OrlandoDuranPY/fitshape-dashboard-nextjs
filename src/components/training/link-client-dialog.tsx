@@ -6,6 +6,7 @@ import {
   coachClientSchema,
   type CoachClientSchema,
 } from "@/lib/schemas/training/coach-client-schema";
+import {useAuthStore} from "@/lib/store/auth-store";
 import {cn} from "@/lib/utils";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {X} from "lucide-react";
@@ -31,6 +32,8 @@ export default function LinkClientDialog({
 }: LinkClientDialogProps) {
   const {isLoading: loadingCatalog, coaches, users, getCoaches, getUsers} = useCatalogs();
   const {isLoading, errors: apiErrors, storeCoachClient} = useCoachClients();
+  const currentUser = useAuthStore((s) => s.user);
+  const isCoach = currentUser?.role === "coach";
 
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -43,7 +46,7 @@ export default function LinkClientDialog({
     mode: "onBlur",
     shouldFocusError: false,
     defaultValues: {
-      coach_uuid: "",
+      coach_uuid: isCoach ? (currentUser?.uuid ?? "") : "",
       user_uuid: "",
       start_date: null,
       end_date: null,
@@ -59,8 +62,18 @@ export default function LinkClientDialog({
     if (open) {
       setMounted(true);
       const raf = requestAnimationFrame(() => setVisible(true));
-      getCoaches();
-      methods.reset();
+      if (isCoach) {
+        methods.reset({
+          coach_uuid: currentUser?.uuid ?? "",
+          user_uuid: "",
+          start_date: null,
+          end_date: null,
+        });
+        getUsers();
+      } else {
+        getCoaches();
+        methods.reset();
+      }
       return () => cancelAnimationFrame(raf);
     } else {
       setVisible(false);
@@ -70,6 +83,7 @@ export default function LinkClientDialog({
   }, [open]);
 
   useEffect(() => {
+    if (isCoach) return;
     methods.setValue("user_uuid", "", {shouldValidate: false});
     if (coachUuid) {
       getUsers();
@@ -140,18 +154,20 @@ export default function LinkClientDialog({
         {/* Form */}
         <FormProvider {...methods}>
           <form onSubmit={onSubmit} className='grid gap-4'>
-            <InputGroup
-              name='coach_uuid'
-              label='Entrenador'
-              placeholder='Escoge un entrenador'
-              type='combobox'
-              options={coaches}
-              required
-            />
+            {!isCoach && (
+              <InputGroup
+                name='coach_uuid'
+                label='Entrenador'
+                placeholder='Escoge un entrenador'
+                type='combobox'
+                options={coaches}
+                required
+              />
+            )}
             <InputGroup
               name='user_uuid'
               label='Cliente'
-              placeholder={coachUuid ? "Escoge un cliente" : "Primero selecciona un entrenador"}
+              placeholder={isCoach || coachUuid ? "Escoge un cliente" : "Primero selecciona un entrenador"}
               type='combobox'
               options={users}
               required

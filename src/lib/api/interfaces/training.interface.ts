@@ -29,6 +29,7 @@ export interface CoachClient {
   id: number;
   coach_uuid: string;
   coach_name: string | null;
+  coach_email: string | null;
   user_uuid: string;
   user_name: string | null;
   user_email: string | null;

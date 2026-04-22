@@ -18,7 +18,8 @@ export default function CreatePlan() {
   /* ========================================
      = Stores =
   ========================================= */
-  useAuthStore();
+  const currentUser = useAuthStore((s) => s.user);
+  const isCoach = currentUser?.role === "coach";
 
   /* ========================================
      = Composables =
@@ -33,6 +34,9 @@ export default function CreatePlan() {
     resolver: zodResolver(trainingPlanSchema),
     mode: "onBlur",
     shouldFocusError: false,
+    defaultValues: {
+      coach_uuid: isCoach ? (currentUser?.uuid ?? "") : "",
+    },
   });
 
   const coachUuid = methods.watch("coach_uuid");
@@ -41,15 +45,18 @@ export default function CreatePlan() {
      = Effects =
   ========================================= */
   useEffect(() => {
-    getCoaches();
+    if (isCoach) {
+      getUsers({coach_uuid: currentUser?.uuid});
+    } else {
+      getCoaches();
+    }
   }, []);
 
   useEffect(() => {
+    if (isCoach) return;
+    methods.setValue("user_uuid", "", {shouldValidate: false});
     if (coachUuid) {
-      methods.setValue("user_uuid", "", {shouldValidate: false});
       getUsers({coach_uuid: coachUuid});
-    } else {
-      methods.setValue("user_uuid", "", {shouldValidate: false});
     }
   }, [coachUuid]);
 
@@ -82,19 +89,21 @@ export default function CreatePlan() {
           <FormProvider {...methods}>
             <form onSubmit={onFinish}>
               <div className='grid lg:grid-cols-3 gap-4 mb-4'>
-                <InputGroup
-                  name='coach_uuid'
-                  label='Entrenador'
-                  placeholder='Escoge un entrenador'
-                  type='combobox'
-                  options={coaches}
-                  required
-                />
+                {!isCoach && (
+                  <InputGroup
+                    name='coach_uuid'
+                    label='Entrenador'
+                    placeholder='Escoge un entrenador'
+                    type='combobox'
+                    options={coaches}
+                    required
+                  />
+                )}
                 <InputGroup
                   name='user_uuid'
                   label='Cliente'
                   placeholder={
-                    coachUuid
+                    isCoach || coachUuid
                       ? "Escoge un cliente"
                       : "Primero selecciona un entrenador"
                   }
@@ -118,14 +127,14 @@ export default function CreatePlan() {
                 />
                 <InputGroup
                   name='starts_at'
-                  label='Comienza'
+                  label='Fecha de inicio'
                   placeholder='Escoge la fecha de inicio'
                   required
                   type='date'
                 />
                 <InputGroup
                   name='ends_at'
-                  label='Finaliza'
+                  label='Fecha de fin'
                   placeholder='Escoge la fecha de finalización'
                   required
                   type='date'
