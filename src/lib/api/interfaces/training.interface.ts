@@ -23,6 +23,32 @@ export interface PaginatedExercises {
 }
 
 /* ========================================
+   = Coach Clients =
+========================================= */
+export interface CoachClient {
+  id: number;
+  coach_uuid: string;
+  coach_name: string | null;
+  user_uuid: string;
+  user_name: string | null;
+  user_email: string | null;
+  status: "active" | "inactive" | "pending";
+  start_date: string | null;
+  end_date: string | null;
+  created_at: string;
+}
+
+export interface PaginatedCoachClients {
+  coach_clients: CoachClient[];
+  current_page: number;
+  per_page: number;
+  total: number;
+  last_page: number;
+  next_page_url: string | null;
+  prev_page_url: string | null;
+}
+
+/* ========================================
    = Training Plans =
 ========================================= */
 export interface TrainingPlan {

@@ -20,6 +20,7 @@ interface InputGroupProps {
   clearable?: boolean;
   maxLength?: number;
   maxDigits?: number;
+  container?: HTMLElement | null;
 }
 
 export default function InputGroup({
@@ -32,6 +33,7 @@ export default function InputGroup({
   clearable,
   maxLength,
   maxDigits,
+  container,
 }: InputGroupProps) {
   const {
     register,
@@ -69,6 +71,7 @@ export default function InputGroup({
         placeholder={placeholder}
         options={options}
         clearable={clearable}
+        container={container}
       />
     );
   }

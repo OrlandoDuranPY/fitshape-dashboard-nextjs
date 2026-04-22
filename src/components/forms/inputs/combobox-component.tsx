@@ -22,18 +22,19 @@ interface ComboboxComponentProps {
   placeholder?: string;
   clearable?: boolean;
   options?: {value: string | number; label: string}[];
+  container?: HTMLElement | null;
   // Modo controlado (sin FormProvider)
   value?: string;
   onChange?: (value: string | null) => void;
 }
 
 const inputGroupClass =
-  "h-auto! w-full border-gray/80 px-0 py-0 font-heading text-base md:text-sm";
+  "h-auto! w-full border-gray/80 px-0 py-0 font-heading text-base md:text-sm has-[[data-slot=input-group-control]:focus-visible]:border-brand has-[[data-slot=input-group-control]:focus-visible]:ring-0";
 
 function buildItems(options: {value: string | number; label: string}[]) {
   const items = options.map((o) => String(o.value));
   const labelMap: Record<string, string> = Object.fromEntries(
-    options.map((o) => [String(o.value), o.label])
+    options.map((o) => [String(o.value), o.label]),
   );
   const itemToStringLabel = (val: unknown) =>
     val ? (labelMap[String(val)] ?? String(val)) : "";
@@ -48,6 +49,7 @@ function ComboboxFormConnected({
   placeholder,
   clearable,
   options = [],
+  container,
 }: Omit<ComboboxComponentProps, "value" | "onChange">) {
   const {
     control,
@@ -82,7 +84,7 @@ function ComboboxFormConnected({
               showClear={clearable && !!field.value}
               className={inputGroupClass}
             />
-            <ComboboxContent>
+            <ComboboxContent container={container}>
               <ComboboxEmpty>No hay resultados.</ComboboxEmpty>
               <ComboboxList>
                 {(item: string) => (
@@ -108,6 +110,7 @@ export default function ComboboxComponent({
   placeholder,
   clearable = true,
   options = [],
+  container,
   value,
   onChange,
 }: ComboboxComponentProps) {
@@ -134,7 +137,7 @@ export default function ComboboxComponent({
             showClear={clearable && !!value}
             className={inputGroupClass}
           />
-          <ComboboxContent>
+          <ComboboxContent container={container}>
             <ComboboxEmpty>No hay resultados.</ComboboxEmpty>
             <ComboboxList>
               {(item: string) => (
@@ -158,6 +161,7 @@ export default function ComboboxComponent({
       placeholder={placeholder}
       clearable={clearable}
       options={options}
+      container={container}
     />
   );
 }

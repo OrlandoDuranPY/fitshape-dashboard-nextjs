@@ -13,6 +13,7 @@ export const useCatalogs = () => {
   const [errors, setErrors] = useState<Record<string, string[]>>({});
   const [genders, setGenders] = useState<{value: string; label: string}[]>([]);
   const [coaches, setCoaches] = useState<{value: string; label: string}[]>([]);
+  const [users, setUsers] = useState<{value: string; label: string}[]>([]);
 
   /* ========================================
      = Requests =
@@ -79,6 +80,35 @@ export const useCatalogs = () => {
     }
   };
 
+  /**
+   * Users catalog (role: user)
+   */
+  const getUsers = async (params?: {coach_uuid?: string}) => {
+    setIsLoading(true);
+    setUsers([]);
+    try {
+      const response = await apiRequest<ApiResponse>(
+        ENDPOINTS.CATALOGS.USERS,
+        {method: "GET", params},
+      );
+
+      if (response && response.status === "success") {
+        const mappedUsers = (
+          response.data as unknown as {uuid: string; full_name: string}[]
+        ).map((u) => ({
+          value: u.uuid,
+          label: u.full_name,
+        }));
+        setUsers(mappedUsers);
+      }
+    } catch (err) {
+      const apiError = err as ApiValidationError;
+      toast.error(apiError.message || "Error al cargar los usuarios");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   /* ========================================
      = Returns =
   ========================================= */
@@ -88,8 +118,10 @@ export const useCatalogs = () => {
     errors,
     genders,
     coaches,
+    users,
     // methods
     getGenders,
     getCoaches,
+    getUsers,
   };
 };

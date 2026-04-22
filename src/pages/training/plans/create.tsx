@@ -19,10 +19,11 @@ export default function CreatePlan() {
      = Stores =
   ========================================= */
   useAuthStore();
+
   /* ========================================
      = Composables =
   ========================================= */
-  const {isLoading, coaches, getCoaches} = useCatalogs();
+  const {isLoading, coaches, users, getCoaches, getUsers} = useCatalogs();
   const {isLoading: isLoadingPlans, errors: apiErrors, storePlan} = usePlans();
 
   /* ========================================
@@ -33,6 +34,24 @@ export default function CreatePlan() {
     mode: "onBlur",
     shouldFocusError: false,
   });
+
+  const coachUuid = methods.watch("coach_uuid");
+
+  /* ========================================
+     = Effects =
+  ========================================= */
+  useEffect(() => {
+    getCoaches();
+  }, []);
+
+  useEffect(() => {
+    if (coachUuid) {
+      methods.setValue("user_uuid", "", {shouldValidate: false});
+      getUsers({coach_uuid: coachUuid});
+    } else {
+      methods.setValue("user_uuid", "", {shouldValidate: false});
+    }
+  }, [coachUuid]);
 
   /* ========================================
      = Functions =
@@ -51,35 +70,36 @@ export default function CreatePlan() {
     }
   });
 
-  useEffect(() => {
-    getCoaches();
-  }, []);
   return (
     <section>
       <Card>
         <div className='px-4 w-full'>
           <Title
             level={4}
-            title='Datos del plan de entranamiento.'
+            title='Datos del plan de entrenamiento.'
             className='mb-4'
           />
           <FormProvider {...methods}>
             <form onSubmit={onFinish}>
               <div className='grid lg:grid-cols-3 gap-4 mb-4'>
                 <InputGroup
-                  name='user_uuid'
-                  label='Cliente'
-                  placeholder='Escoge un cliente'
-                  type='combobox'
-                  options={coaches}
-                  required
-                />
-                <InputGroup
                   name='coach_uuid'
                   label='Entrenador'
                   placeholder='Escoge un entrenador'
                   type='combobox'
                   options={coaches}
+                  required
+                />
+                <InputGroup
+                  name='user_uuid'
+                  label='Cliente'
+                  placeholder={
+                    coachUuid
+                      ? "Escoge un cliente"
+                      : "Primero selecciona un entrenador"
+                  }
+                  type='combobox'
+                  options={users}
                   required
                 />
                 <InputGroup
