@@ -1,5 +1,6 @@
 import DashboardLayout from "@/components/layouts/dashboard-layout";
 import LinkClientDialog from "@/components/training/link-client-dialog";
+import EditCoachClientDialog from "@/components/training/edit-coach-client-dialog";
 import DataTable from "@/components/tables/DataTable";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
@@ -10,8 +11,9 @@ import type {CoachClient} from "@/lib/api/interfaces/training.interface";
 import {useAuthStore} from "@/lib/store/auth-store";
 import {formatDate} from "@/lib/utils";
 import {ColumnDef} from "@tanstack/react-table";
-import {Users, UserCheck, UserX, Clock} from "lucide-react";
+import {Users, UserCheck, UserX, Clock, Edit2} from "lucide-react";
 import {ReactElement, useCallback, useEffect, useMemo, useState} from "react";
+import ButtonAction from "@/components/tables/actions/button-action";
 
 /* ========================================
    = Helpers =
@@ -65,7 +67,7 @@ const coachColumn: ColumnDef<CoachClient> = {
   ),
 };
 
-const baseColumns: ColumnDef<CoachClient>[] = [
+const staticColumns: ColumnDef<CoachClient>[] = [
   {
     accessorKey: "status",
     header: "Estado",
@@ -116,19 +118,38 @@ export default function Coachees() {
   const currentUser = useAuthStore((s) => s.user);
   const isSuperAdmin = currentUser?.role === "super_admin";
 
-  const columns = useMemo<ColumnDef<CoachClient>[]>(
-    () =>
-      isSuperAdmin
-        ? [clientColumn, coachColumn, ...baseColumns]
-        : [clientColumn, ...baseColumns],
-    [isSuperAdmin],
-  );
-
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<CoachClient | null>(null);
   const [params, setParams] = useState<CoacheeParams>({
     page: 1,
     per_page: 10,
   });
+
+  const handleEdit = useCallback((client: CoachClient) => {
+    setSelectedClient(client);
+    setEditDialogOpen(true);
+  }, []);
+
+  const columns = useMemo<ColumnDef<CoachClient>[]>(() => {
+    const actionsColumn: ColumnDef<CoachClient> = {
+      id: "actions",
+      header: "Acciones",
+      cell: ({row}) => (
+        <div className='flex gap-2'>
+          <ButtonAction
+            tooltipText='Editar'
+            icon={Edit2}
+            onClick={() => handleEdit(row.original)}
+          />
+        </div>
+      ),
+    };
+
+    return isSuperAdmin
+      ? [clientColumn, coachColumn, ...staticColumns, actionsColumn]
+      : [clientColumn, ...staticColumns, actionsColumn];
+  }, [isSuperAdmin, handleEdit]);
 
   const updateParams = (updates: Partial<CoacheeParams>) =>
     setParams((prev) => ({...prev, page: 1, ...updates}));
@@ -197,6 +218,13 @@ export default function Coachees() {
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         onSuccess={() => getCoachClients(params)}
+      />
+
+      <EditCoachClientDialog
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={() => getCoachClients(params)}
+        coachClient={selectedClient}
       />
 
       <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4'>
