@@ -168,7 +168,7 @@ interface ApiResponse<T> {
 | `useAuth` | `hooks/auth/use-auth.ts` | `register()`, `login()`, `forgotPassword()`, `logout()` |
 | `useTraining` | `hooks/training/use-training.ts` | `getExercices(params)` |
 | `usePlans` | `hooks/training/use-plans.ts` | `getPlans(params)`, `storePlan(data)` |
-| `useCoachClients` | `hooks/training/use-coach-clients.ts` | Gestión relaciones coach-cliente |
+| `useCoachClients` | `hooks/training/use-coach-clients.ts` | `getCoachClients(params)`, `storeCoachClient(data)`, `updateCoachClient(id, data)`, `removeCoachClient(id)` |
 | `useCatalogs` | `hooks/use-catalogs.ts` | `getGenders()`, `getCoaches()`, `getUsers(params)` |
 | `useIsMobile` | `hooks/use-mobile.ts` | Detecta viewport móvil (breakpoint 768px) |
 
@@ -192,11 +192,14 @@ components/
 │   └── RouteGuard.tsx     # Protección de rutas client-side
 ├── tables/
 │   ├── DataTable.tsx      # TanStack Table wrapper
-│   └── Pagination.tsx     # Controles de paginación
+│   ├── Pagination.tsx     # Controles de paginación
+│   └── actions/
+│       └── button-action.tsx  # Botón de acción con tooltip; acepta `onClick`, `icon`, `tooltipText`
 ├── auth/
 │   └── register-stepper.tsx # Stepper multi-paso para registro
 └── training/
-    └── link-client-dialog.tsx # Dialog para vincular coach-cliente
+    ├── link-client-dialog.tsx     # Dialog para vincular coach-cliente (POST)
+    └── edit-coach-client-dialog.tsx # Dialog para editar vínculo coach-cliente (PATCH); recibe `coachClient` y precarga status/fechas
 ```
 
 ---
@@ -208,7 +211,8 @@ components/
 | Registro | `lib/schemas/auth/register-schema.ts` | email, password, password_confirmation, name, apellidos, gender_id, weight, height, birth_date |
 | Login | `lib/schemas/auth/login-schema.ts` | email, password (min 8) |
 | Plan de entrenamiento | `lib/schemas/training/training-plan-schema.ts` | user_uuid, coach_uuid?, name, description, days_count (1-7), starts_at, ends_at |
-| Coach-cliente | `lib/schemas/training/coach-client-schema.ts` | Vincular coach con cliente |
+| Coach-cliente (crear) | `lib/schemas/training/coach-client-schema.ts` | coach_uuid, user_uuid, start_date, end_date |
+| Coach-cliente (editar) | `lib/schemas/training/edit-coach-client-schema.ts` | status (active/inactive/pending), start_date, end_date |
 
 ---
 
@@ -291,6 +295,20 @@ El cliente Axios selecciona la URL base según `APP_ENV`.
 ### Patrón de fetch
 Sin React Query ni SWR. Flujo: custom hook → `apiRequest()` → Axios → backend. El hook gestiona `isLoading`, `errors` y `data` localmente con `useState`.
 
+### Columnas de tabla con acciones dinámicas
+Cuando una columna de acciones necesita disparar handlers del componente (ej. abrir un modal con la fila seleccionada), la columna **no** se define como constante fuera del componente. Se define dentro del `useMemo` de `columns` para tener acceso a los callbacks. Las columnas sin callbacks sí pueden vivir fuera como `const` estáticos.
+
+```tsx
+// Patrón en coachees.tsx
+const columns = useMemo(() => {
+  const actionsColumn: ColumnDef<CoachClient> = {
+    id: "actions",
+    cell: ({ row }) => <ButtonAction onClick={() => handleEdit(row.original)} ... />,
+  };
+  return [...staticColumns, actionsColumn];
+}, [isSuperAdmin, handleEdit]);
+```
+
 ### Navegación
 - Rutas como constantes en `src/routing/routes.ts`
 - Items de navegación con soporte para dropdowns anidados via `NavItem` interface
@@ -302,3 +320,4 @@ Sin React Query ni SWR. Flujo: custom hook → `apiRequest()` → Axios → back
 | Fecha | Cambio |
 |---|---|
 | 2026-04-22 | Documento inicial creado por exploración automática |
+| 2026-04-22 | Módulo coach-cliente: `EditCoachClientDialog`, `editCoachClientSchema`, `onClick` en `ButtonAction`, patrón de columnas dinámicas en tabla |
